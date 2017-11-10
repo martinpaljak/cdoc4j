@@ -54,7 +54,7 @@ public class XML {
         @SuppressWarnings("serial")
         HashMap<String, String> prefixes = new HashMap<>();
         prefixes.put("ddoc", "http://www.sk.ee/DigiDoc/v1.3.0#");
-        prefixes.put("denc", "http://www.w3.org/2001/04/xmlenc#");
+        prefixes.put("xenc", "http://www.w3.org/2001/04/xmlenc#");
         prefixes.put("ds", "http://www.w3.org/2000/09/xmldsig#");
 
         NSContext nsctx = new NSContext(prefixes);

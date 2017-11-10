@@ -71,16 +71,16 @@ public class CDOCv1 {
 
 
         // Add payload
-        Element cipherdata = recipientsXML.createElement("denc:CipherData");
-        Element payload = recipientsXML.createElement("denc:CipherValue");
+        Element cipherdata = recipientsXML.createElement("xenc:CipherData");
+        Element payload = recipientsXML.createElement("xenc:CipherValue");
         payload.setTextContent(Base64.getEncoder().encodeToString(cgram));
         cipherdata.appendChild(payload);
         recipientsXML.getDocumentElement().appendChild(cipherdata);
 
         // XXX: Add comments or file will not have content
-        Element props = recipientsXML.createElement("denc:EncryptionProperties");
+        Element props = recipientsXML.createElement("xenc:EncryptionProperties");
         for (int i = 0; i < files.size(); i++) {
-            Element prop = recipientsXML.createElement("denc:EncryptionProperty");
+            Element prop = recipientsXML.createElement("xenc:EncryptionProperty");
             prop.setAttribute("Name", "orig_file");
             prop.setTextContent("😳 - decrypt me!|1|application/octet-stream|D" + i);
             props.appendChild(prop);
@@ -149,9 +149,8 @@ public class CDOCv1 {
     // FIXME: wrong place, bad implementation
     private static byte[] padx923(byte[] text) {
         int length = text.length;
-        int blocksize = 16;
         int totalLength = length;
-        for (totalLength++; (totalLength % blocksize) != 0; totalLength++) ;
+        for (totalLength++; (totalLength % 16) != 0; totalLength++) ;
         int padlength = totalLength - length;
         byte[] result = new byte[totalLength];
         System.arraycopy(text, 0, result, 0, length);
@@ -164,9 +163,8 @@ public class CDOCv1 {
 
     private static byte[] padpkcs7(byte[] text) {
         int length = text.length;
-        int blocksize = 16;
         int totalLength = length;
-        for (totalLength++; (totalLength % blocksize) != 0; totalLength++) ;
+        for (totalLength++; (totalLength % 16) != 0; totalLength++) ;
         int padlength = totalLength - length;
         byte[] result = new byte[totalLength];
         System.arraycopy(text, 0, result, 0, length);

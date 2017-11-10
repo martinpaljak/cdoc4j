@@ -7,39 +7,48 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.File;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@RunWith(Parameterized.class)
-
 public class TestEncryptDummy {
     static Path dummy;
+    static Path onemegabyte;
+
+    static List<File> payload;
 
     static X509Certificate ecc;
     static X509Certificate rsa;
 
-    static boolean deleteOnExit = true;
+    static boolean deleteOnExit = false;
     @Rule
     public TestName name = new TestName();
     Path tmp;
     long start;
 
-    @Parameterized.Parameters
-    public static List<Object[]> data() {
-        return Arrays.asList(new Object[10][0]);
-    }
 
     @BeforeClass
     public static void resources() throws Exception {
+        //dummy = Paths.get("/Users/martin/10M.bin");
+
         // Extract resource
+        onemegabyte = Files.createTempFile(null, null);
+        IOUtils.copy(TestEncryptDummy.class.getResourceAsStream("1M.bin"), Files.newOutputStream(onemegabyte));
+
         dummy = Files.createTempFile(null, null);
         IOUtils.copy(TestEncryptDummy.class.getResourceAsStream("CDOC-A-101-7.pdf"), Files.newOutputStream(dummy));
-        //dummy = Paths.get("/Users/martin/10M.bin");
-        System.out.println("Input file size: " + Files.size(dummy));
+        System.out.println("Input file sizes: " + (Files.size(dummy) + Files.size(onemegabyte)));
+
+        payload = new ArrayList<>();
+        payload.add(dummy.toFile());
+        payload.add(onemegabyte.toFile());
+
+        // Parse certificates
         CertificateFactory cf = CertificateFactory.getInstance("X509");
         ecc = (X509Certificate) cf.generateCertificate(TestEncryptDummy.class.getResourceAsStream("sk-auth-ecc.pem"));
         rsa = (X509Certificate) cf.generateCertificate(TestEncryptDummy.class.getResourceAsStream("sk-auth.pem"));
@@ -56,32 +65,33 @@ public class TestEncryptDummy {
     @After
     public void measure() throws Exception {
         System.out.println("File size " + Files.size(tmp) + " for " + name.getMethodName() + " in " + (System.currentTimeMillis() - start) + "ms");
-        Files.delete(tmp);
+        System.out.println(tmp);
+        // Files.delete(tmp);
     }
 
     @Test
     public void testEncryptionV11ECC() throws Exception {
-        CDOCv1.encrypt(CDOCv1.VERSION.V1_1, tmp.toFile(), Arrays.asList(new File[]{dummy.toFile()}), Arrays.asList(new X509Certificate[]{ecc}));
+        CDOCv1.encrypt(CDOCv1.VERSION.V1_1, tmp.toFile(), payload, Arrays.asList(new X509Certificate[]{ecc}));
     }
 
     @Test
     public void testEncryptionV10RSA() throws Exception {
-        CDOCv1.encrypt(CDOCv1.VERSION.V1_0, tmp.toFile(), Arrays.asList(new File[]{dummy.toFile()}), Arrays.asList(new X509Certificate[]{rsa}));
+        CDOCv1.encrypt(CDOCv1.VERSION.V1_0, tmp.toFile(), payload, Arrays.asList(new X509Certificate[]{rsa}));
     }
 
     @Test
     public void testEncryptionV20ECC() throws Exception {
-        CDOCv2.encrypt(tmp.toFile(), Arrays.asList(new File[]{dummy.toFile()}), Arrays.asList(new X509Certificate[]{ecc}));
+        CDOCv2.encrypt(tmp.toFile(), payload, Arrays.asList(new X509Certificate[]{ecc}));
     }
 
     @Test
     public void testEncryptionV20RSA() throws Exception {
-        CDOCv2.encrypt(tmp.toFile(), Arrays.asList(new File[]{dummy.toFile()}), Arrays.asList(new X509Certificate[]{rsa}));
+        CDOCv2.encrypt(tmp.toFile(), payload, Arrays.asList(new X509Certificate[]{rsa}));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testEncryptionV10ECC() throws Exception {
-        CDOCv1.encrypt(CDOCv1.VERSION.V1_0, tmp.toFile(), Arrays.asList(new File[]{dummy.toFile()}), Arrays.asList(new X509Certificate[]{ecc}));
+        CDOCv1.encrypt(CDOCv1.VERSION.V1_0, tmp.toFile(), payload, Arrays.asList(new X509Certificate[]{ecc}));
     }
 
 }
