@@ -18,14 +18,13 @@ import java.util.List;
 
 public class TestEncryptDummy {
     static Path dummy;
-    static Path onemegabyte;
 
     static List<File> payload;
 
     static X509Certificate ecc;
     static X509Certificate rsa;
 
-    static boolean deleteOnExit = false;
+    static boolean deleteOnExit = true;
     @Rule
     public TestName name = new TestName();
     Path tmp;
@@ -34,19 +33,13 @@ public class TestEncryptDummy {
 
     @BeforeClass
     public static void resources() throws Exception {
-        //dummy = Paths.get("/Users/martin/10M.bin");
-
         // Extract resource
-        onemegabyte = Files.createTempFile(null, null);
-        IOUtils.copy(TestEncryptDummy.class.getResourceAsStream("1M.bin"), Files.newOutputStream(onemegabyte));
-
         dummy = Files.createTempFile(null, null);
         IOUtils.copy(TestEncryptDummy.class.getResourceAsStream("CDOC-A-101-7.pdf"), Files.newOutputStream(dummy));
-        System.out.println("Input file sizes: " + (Files.size(dummy) + Files.size(onemegabyte)));
+        System.out.println("Input file sizes: " + (Files.size(dummy)));
 
         payload = new ArrayList<>();
         payload.add(dummy.toFile());
-        payload.add(onemegabyte.toFile());
 
         // Parse certificates
         CertificateFactory cf = CertificateFactory.getInstance("X509");
