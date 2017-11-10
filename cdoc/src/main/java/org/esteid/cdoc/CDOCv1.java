@@ -22,7 +22,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.security.*;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
@@ -34,18 +36,9 @@ import java.util.List;
 // Generates CDOC v1.0 and v1.1 encrypted documents.
 // Works on files.
 public class CDOCv1 {
-    final static SecureRandom random;
-
-    static {
-        try {
-            random = SecureRandom.getInstanceStrong();
-        } catch (NoSuchAlgorithmException e) {
-            throw new Error("Need to have SecureRandom");
-        }
-    }
 
     public static void encrypt(VERSION v, File to, List<File> files, List<X509Certificate> recipients) throws GeneralSecurityException, NamingException, IOException {
-        // Check
+        // V1.0 can only be used with RSA keys
         if (v == VERSION.V1_0) {
             for (X509Certificate c : recipients) {
                 if (!c.getPublicKey().getAlgorithm().equals("RSA"))
@@ -68,11 +61,11 @@ public class CDOCv1 {
         // Encrypt payload
         if (v == VERSION.V1_0) {
             byte[] iv = new byte[16];
-            random.nextBytes(iv);
+            CDOC.random.nextBytes(iv);
             cgram = CDOCv1.encrypt_cbc(data, dek, iv);
         } else {
             byte[] iv = new byte[12];
-            random.nextBytes(iv);
+            CDOC.random.nextBytes(iv);
             cgram = CDOCv1.encrypt_gcm(data, dek, iv);
         }
 
@@ -355,7 +348,6 @@ public class CDOCv1 {
         Element cipherdata = cdoc.createElement("xenc:CipherData");
         Element ciphervalue = cdoc.createElement("xenc:CipherValue");
 
-        // Do DH
         ciphervalue.setTextContent(Base64.getEncoder().encodeToString(cgram));
 
         cipherdata.appendChild(ciphervalue);

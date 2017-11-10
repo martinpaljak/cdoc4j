@@ -14,7 +14,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.security.GeneralSecurityException;
-import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -46,7 +45,7 @@ public class CDOCv2 {
 
         // Encrypt payload
         byte[] iv = new byte[12];
-        CDOCv1.random.nextBytes(iv);
+        CDOC.random.nextBytes(iv);
         byte[] cgram = CDOCv1.encrypt_gcm(data, dek, iv);
 
         // Make container
