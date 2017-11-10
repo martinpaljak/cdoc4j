@@ -21,7 +21,7 @@ import java.util.zip.ZipOutputStream;
 
 public class CDOCv2 {
 
-    public static String MIMETYPE = "application/x-cryptodoc";
+    public static final String MIMETYPE = "application/x-cryptodoc";
 
     public static void encrypt(File to, List<File> files, List<X509Certificate> recipients) throws GeneralSecurityException, NamingException, IOException {
 
@@ -49,8 +49,8 @@ public class CDOCv2 {
         byte[] cgram = CDOCv1.encrypt_gcm(data, dek, iv);
 
         // Make container
-        Manifest mf = new Manifest(MIMETYPE);
-        mf.addFile("package.zip", "application/zip", cgram.length);
+        //Manifest mf = new Manifest(MIMETYPE);
+        //mf.addFile("package.zip", "application/zip", cgram.length);
         //mf.toStream(System.out);
 
 

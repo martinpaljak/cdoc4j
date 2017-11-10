@@ -63,12 +63,12 @@ public class Container {
         // mimetype
         ZipEntry mt = new ZipEntry("mimetype");
         mt.setMethod(ZipEntry.STORED);
-        mt.setSize(mimetype.getBytes().length);
+        mt.setSize(mimetype.getBytes(StandardCharsets.US_ASCII).length);
         CRC32 crc32 = new CRC32();
-        crc32.update(mimetype.getBytes());
+        crc32.update(mimetype.getBytes(StandardCharsets.US_ASCII));
         mt.setCrc(crc32.getValue());
         zos.putNextEntry(mt);
-        zos.write(mimetype.getBytes());
+        zos.write(mimetype.getBytes(StandardCharsets.US_ASCII));
         zos.closeEntry();
 
         // manifest

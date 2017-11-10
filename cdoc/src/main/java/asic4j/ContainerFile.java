@@ -44,15 +44,13 @@ public class ContainerFile implements AutoCloseable {
     }
 
     public static String identify(File f) throws IOException {
-
         try (InputStream in = new FileInputStream(f)) {
             byte[] header = new byte[100];
-            in.read(header, 0, 100);
-            System.out.println("PK: " + new String(header, 0, 2, StandardCharsets.US_ASCII.name()));
-            System.out.println("mimetype: " + new String(header, 30, 8, StandardCharsets.US_ASCII.name()));
-            //System.out.println("mimetype: " + HexUtils.bin2hex(Arrays.copyOfRange(header, 38, 60)));
-
-            // Check for actual mime type
+            if (in.read(header, 0, 38) > 38) {
+                System.out.println("PK: " + new String(header, 0, 2, StandardCharsets.US_ASCII.name()));
+                System.out.println("mimetype: " + new String(header, 30, 8, StandardCharsets.US_ASCII.name()));
+                //System.out.println("mimetype: " + HexUtils.bin2hex(Arrays.copyOfRange(header, 38, 60)));
+            }
         }
         return null;
     }
@@ -87,7 +85,7 @@ public class ContainerFile implements AutoCloseable {
         }
 
         // Read mimetype entry
-        try (BufferedReader bin = new BufferedReader(new InputStreamReader(zf.getInputStream(mimetype)))) {
+        try (BufferedReader bin = new BufferedReader(new InputStreamReader(zf.getInputStream(mimetype), StandardCharsets.US_ASCII))) {
             this.mimetype = bin.readLine();
             //debug.println("Info: mimetype=" + this.mimetype);
         }

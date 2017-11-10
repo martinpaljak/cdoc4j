@@ -62,7 +62,7 @@ public class Manifest {
                 Node filesize = n.getAttributes().getNamedItem("manifest:size");
                 if (filesize != null) {
                     // Add to container
-                    fileSize = Long.valueOf(filesize.getTextContent());
+                    fileSize = Long.parseLong(filesize.getTextContent());
                 }
                 ManifestEntry mfile = new ManifestEntry(fullPath, mediaType, fileSize);
                 files.add(mfile);

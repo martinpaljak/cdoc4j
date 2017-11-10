@@ -271,7 +271,7 @@ public class CDOCv1 {
         //System.out.println(curveName);
 
 
-        byte[] algid = new String("http://www.w3.org/2001/04/xmlenc#kw-aes256").getBytes(StandardCharsets.US_ASCII);
+        byte[] algid = "http://www.w3.org/2001/04/xmlenc#kw-aes256".getBytes(StandardCharsets.US_ASCII);
         byte[] uinfo = tempKeyInfo.getPublicKeyData().getBytes();
         byte[] vinfo = getCN(cert).getBytes(StandardCharsets.UTF_8);
 
