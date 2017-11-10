@@ -34,7 +34,7 @@ import java.util.List;
 // Generates CDOC v1.0 and v1.1 encrypted documents.
 // Works on files.
 public class CDOCv1 {
-    private final static SecureRandom random;
+    final static SecureRandom random;
 
     static {
         try {

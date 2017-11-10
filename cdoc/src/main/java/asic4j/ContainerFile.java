@@ -33,7 +33,7 @@ public class ContainerFile implements AutoCloseable {
     public static ContainerFile open(Path p) throws IOException {
         // TODO: file internally
         URI uri = URI.create("jar:" + p.toUri());
-        System.out.println("Opening " + uri);
+        //System.out.println("Opening " + uri);
         Map<String, String> env = new HashMap<>();
         FileSystem fs = FileSystems.newFileSystem(uri, env);
         return new ContainerFile(fs, new ZipFile(p.toFile()));

@@ -46,13 +46,13 @@ public class CDOCv2 {
 
         // Encrypt payload
         byte[] iv = new byte[12];
-        new SecureRandom().nextBytes(iv); // FIXME: re-use instance
+        CDOCv1.random.nextBytes(iv);
         byte[] cgram = CDOCv1.encrypt_gcm(data, dek, iv);
 
         // Make container
         Manifest mf = new Manifest(MIMETYPE);
         mf.addFile("package.zip", "application/zip", cgram.length);
-        mf.toStream(System.out);
+        //mf.toStream(System.out);
 
 
         // Pump into container
@@ -72,7 +72,6 @@ public class CDOCv2 {
         ZipOutputStream payload_z = new ZipOutputStream(payload_b);
 
         for (File p : files) {
-            // put all in flat file
             ZipEntry ze = new ZipEntry(p.getName());
             byte[] fv = Files.readAllBytes(p.toPath());
             ze.setMethod(ZipEntry.DEFLATED);
