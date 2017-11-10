@@ -25,5 +25,5 @@ CDOC.encrypt(output, files, recipients);
 
 ### Supported formats:
 - CDOC 1.0: AES-128 CBC, *RSA recipients only*, XML base64 container (supported by [@open-eid](https://github.com/open-eid) software)
-- **CDOC 1.1 (default):** AES-256 GCM, RSA and ECC recipients, XML base64 container (supported by [@open-eid](https://github.com/open-eid) software)
-- CDOC 2.0: AES-256 GCM, RSA and ECC recipients, ZIP container (_at least_ 30% smaller files compared to XML, not (yet) supported by @open-eid software) 
+- **CDOC 1.1 (default):** AES-256 GCM, RSA and ECC recipients, XML base64 container (supported _soon_ by [@open-eid](https://github.com/open-eid) software)
+- CDOC 2.0: AES-256 GCM, RSA and ECC recipients, ZIP container (_at least_ 30%, usually 50% smaller files compared to XML, not (yet) supported by @open-eid software) 
