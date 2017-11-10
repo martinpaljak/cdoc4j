@@ -70,6 +70,7 @@ public class CDOCv2 {
     public static byte[] makePayload(List<File> files) throws IOException {
         ByteArrayOutputStream payload_b = new ByteArrayOutputStream();
         ZipOutputStream payload_z = new ZipOutputStream(payload_b);
+        //payload_z.setLevel(9);
 
         for (File p : files) {
             ZipEntry ze = new ZipEntry(p.getName());
