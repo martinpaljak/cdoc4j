@@ -23,7 +23,7 @@ CDOC v2.0 files are essentially [OpenDocument v1.2](https://docs.oasis-open.org/
 
 Information about transport keys, recipients etc is stored in `META-INF/recipients.xml` which conforms to [XML-ENC](https://www.w3.org/TR/xmlenc-core/) standard and schema.
 
-This scheme is comparable to ASiC-S ODF containers.
+This arrangement is comparable to ASiC-S ODF containers.
 
 ## Package requirements
 * The mime type of CDOC v2.0 is `application/x-cryptodoc`
@@ -49,7 +49,7 @@ The use with Estonian ID-card defaults to:
 
 ### RSA keys
 * RSA 2048 PKCS#1 v1.5 for transport key encryption
-* AES-GCM 256 for transport encryption
+* AES-GCM 256 for payload encryption
 * `META-INF/recipients.xml` snippet:
 
 ```
@@ -65,7 +65,7 @@ The use with Estonian ID-card defaults to:
 
 ### ECC keys
 * P-384 (secp384r1) ECDH-ES with Concat KDF and AES KeyWrap for transport key encryption
-* AES-GCM 256 for transport encryption
+* AES-GCM 256 for payload encryption
 * `META-INF/recipients.xml` snippet:
 
 ```
