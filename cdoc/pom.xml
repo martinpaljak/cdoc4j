@@ -35,10 +35,7 @@
         <directory>target/generated-resources</directory>
       </resource>
       <resource>
-        <directory>main/resources</directory>
-      </resource>
-      <resource>
-        <directory>test/resources</directory>
+        <directory>src/test/resources</directory>
       </resource>
     </resources>
     <plugins>
