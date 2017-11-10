@@ -3,11 +3,8 @@ import org.esteid.cdoc.CDOCv1;
 import org.esteid.cdoc.CDOCv2;
 import org.junit.*;
 import org.junit.rules.TestName;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.io.File;
-import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.CertificateFactory;
