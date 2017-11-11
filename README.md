@@ -2,13 +2,12 @@
 
 Small Java library for _creating_ encrypted CDOC files, with Elliptic Curve support ("CDOC 1.1?").
 
-Usage:
 - Include dependency
 ```xml
 <dependency>
     <groupId>com.github.martinpaljak</groupId>
     <artifactId>cdoc</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 </dependency>
 ```
 - Write code, with the help of [javadoc](https://www.javadoc.io/doc/com.github.martinpaljak/cdoc)
