@@ -4,9 +4,9 @@
   <groupId>com.github.martinpaljak</groupId>
   <artifactId>cdoc</artifactId>
   <packaging>jar</packaging>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <name>CDOC</name>
-  <description>Java library for generating CDOC 1.0/1.1/2.0 files with RSA and ECC</description>
+  <description>Java library for generating CDOC 1.0/1.1/2.0 files with AES-256 GCM and RSA or ECC recipients</description>
   <url>https://github.com/martinpaljak/cdoc</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -22,7 +22,7 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.5</version>
+      <version>2.6</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -76,10 +76,8 @@
           <debug>true</debug>
           <debuglevel>lines,vars,source</debuglevel>
           <compilerArgs>
-            <arg>-XDenableSunApiLintControl</arg>
             <arg>-Xlint:deprecation</arg>
             <arg>-Xlint:unchecked</arg>
-            <arg>-Xlint:sunapi</arg>
           </compilerArgs>
         </configuration>
       </plugin>
@@ -153,20 +151,24 @@
 
   <scm>
     <url>https://github.com/martinpaljak/apdu4j</url>
-    <tag>HEAD</tag>
   </scm>
+
   <developers>
     <developer>
       <id>martinpaljak</id>
       <name>Martin Paljak</name>
       <email>martin@martinpaljak.net</email>
       <url>https://github.com/martinpaljak</url>
+      <roles>
+        <role>developer</role>
+      </roles>
     </developer>
   </developers>
 
   <licenses>
     <license>
       <name>MIT</name>
+      <url>https://github.com/martinpaljak/cdoc/blob/master/LICENSE</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
