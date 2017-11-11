@@ -1,4 +1,4 @@
-# CDOC
+# CDOC · [![Build Status](https://travis-ci.org/martinpaljak/cdoc.svg?branch=master)](https://travis-ci.org/martinpaljak/cdoc)  [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.martinpaljak/cdoc/badge.svg)](https://mvnrepository.com/artifact/com.github.martinpaljak/cdoc) [![MIT licensed](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/martinpaljak/cdoc/blob/master/LICENSE)
 
 Small Java library for _creating_ encrypted CDOC files, with Elliptic Curve support ("CDOC 1.1?").
 
