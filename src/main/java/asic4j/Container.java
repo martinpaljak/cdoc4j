@@ -32,10 +32,11 @@ public class Container {
     }
 
     public void put(Path p, String mimetype) throws IOException {
-        if (p.getFileName() == null) {
-            throw new IllegalArgumentException("Path must not be empty!");
+        Path fn = p.getFileName();
+        if (fn == null) {
+            throw new IllegalArgumentException("Path must encode a file!");
         }
-        put(p.getFileName().toString(), mimetype, Files.readAllBytes(p));
+        put(fn.toString(), mimetype, Files.readAllBytes(p));
     }
 
     public void put(String filename, String mimetype, byte[] data) {
