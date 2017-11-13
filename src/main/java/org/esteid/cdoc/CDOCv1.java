@@ -22,9 +22,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.security.GeneralSecurityException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
+import java.security.*;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
@@ -389,17 +389,22 @@ public class CDOCv1 {
     }
 
     // Extract CN
-    public static String getCN(X509Certificate c) throws InvalidNameException {
-        LdapName ldapDN = new LdapName(c.getSubjectX500Principal().getName());
-        for (Rdn rdn : ldapDN.getRdns()) {
-            if (rdn.getType().equals("CN"))
-                return rdn.getValue().toString();
+    public static String getCN(X509Certificate c) throws CertificateParsingException {
+        try {
+            LdapName ldapDN = new LdapName(c.getSubjectX500Principal().getName());
+            for (Rdn rdn : ldapDN.getRdns()) {
+                if (rdn.getType().equals("CN"))
+                    return rdn.getValue().toString();
+            }
+            // If the certificate does not have CN, make a hash of the certificate
+            // This way we always return something if we have a valid certificate
+            return bytesToHex(MessageDigest.getInstance("SHA-256").digest(c.getEncoded()));
+        } catch (InvalidNameException | NoSuchAlgorithmException|CertificateEncodingException e) {
+            throw new CertificateParsingException("Could not fetch common name from certificate", e);
         }
-        return null;
     }
 
     public enum VERSION {
         V1_0, V1_1
     }
-
 }

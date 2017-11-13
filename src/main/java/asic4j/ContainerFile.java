@@ -156,6 +156,8 @@ public class ContainerFile implements AutoCloseable {
      */
     public byte[] get(String name) throws IOException {
         ZipEntry ze = zf.getEntry(name);
+        if (ze == null)
+            throw new IOException("No such file in the container: " + name);
         try (InputStream fin = zf.getInputStream(ze)) {
             return IOUtils.toByteArray(fin);
         }
