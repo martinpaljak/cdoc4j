@@ -2,6 +2,7 @@ package org.esteid.cdoc;
 
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.crypto.agreement.kdf.ConcatenationKDFGenerator;
+import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA384Digest;
 import org.bouncycastle.crypto.params.KDFParameters;
 import org.w3c.dom.Document;
@@ -230,13 +231,12 @@ public class CDOCv1 {
         return enckey;
     }
 
-    // FIXME: only does secp384 with AES-256
     public static Element toECRecipient(Document cdoc, X509Certificate cert, SecretKey dek) throws InvalidNameException, GeneralSecurityException {
         ECPublicKey k = (ECPublicKey) cert.getPublicKey();
 
         // Generate temporary key.
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC");
-        kpg.initialize(new ECGenParameterSpec("secp384r1"));
+        kpg.initialize(k.getParams());
         KeyPair keyPair = kpg.generateKeyPair();
 
 
@@ -280,7 +280,7 @@ public class CDOCv1 {
         ckdfp.setAttribute("PartyUInfo", bytesToHex(uinfo));
         ckdfp.setAttribute("PartyVInfo", bytesToHex(vinfo));
         Element dm = cdoc.createElement("ds:DigestMethod");
-        dm.setAttribute("Algorithm", "http://www.w3.org/2001/04/xmlenc#sha384"); // FIXME: field size
+        dm.setAttribute("Algorithm", "http://www.w3.org/2001/04/xmlenc#sha256");
         ckdfp.appendChild(dm);
         kdm.appendChild(ckdfp);
         kam.appendChild(kdm);
@@ -329,7 +329,7 @@ public class CDOCv1 {
 
 
         // Derive key wrap key with ckdf
-        ConcatenationKDFGenerator ckdf = new ConcatenationKDFGenerator(new SHA384Digest()); // FIXME: curve size
+        ConcatenationKDFGenerator ckdf = new ConcatenationKDFGenerator(new SHA256Digest());
         ckdf.init(new KDFParameters(shared_secret, concatenate(algid, uinfo, vinfo)));
         byte[] wrapkeybytes = new byte[32];
 
