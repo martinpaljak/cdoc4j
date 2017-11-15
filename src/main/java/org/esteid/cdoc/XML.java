@@ -144,7 +144,7 @@ public class XML {
 
     // Schema validator
     public static final boolean validate(byte[] d) {
-        try {
+        try (InputStream schema = XML.class.getResourceAsStream("schema/cdoc.xsd")) {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
             dbf.setValidating(true);
@@ -157,7 +157,7 @@ public class XML {
             dbf.setExpandEntityReferences(false);
 
             dbf.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaLanguage", XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            dbf.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource", XML.class.getResourceAsStream("schema/cdoc.xsd"));
+            dbf.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource", schema);
             DocumentBuilder db = dbf.newDocumentBuilder();
 
             db.setEntityResolver((publicId, systemId) -> {
