@@ -1,7 +1,6 @@
 package org.esteid.cdoc;
 
 import asic4j.Container;
-import asic4j.Manifest;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -54,9 +53,14 @@ public class CDOCv2 {
         //mf.toStream(System.out);
 
 
+        byte[] rcpts = XML.dom2bytes(recipientsXML);
+        if (!XML.validate(rcpts)) {
+            System.out.println("recipients.xml does not validate!");
+        }
+
         // Pump into container
         Container asic = new Container(MIMETYPE);
-        asic.put_meta("META-INF/recipients.xml", XML.dom2bytes(recipientsXML));
+        asic.put_meta("META-INF/recipients.xml", rcpts);
         asic.put("payload.zip", "application/zip", cgram);
 
         // Write to file

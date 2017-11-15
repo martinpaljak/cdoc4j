@@ -1,6 +1,7 @@
 import org.apache.commons.io.IOUtils;
 import org.esteid.cdoc.CDOCv1;
 import org.esteid.cdoc.CDOCv2;
+import org.esteid.cdoc.XML;
 import org.junit.*;
 import org.junit.rules.TestName;
 
@@ -67,6 +68,8 @@ public class TestEncryptDummy {
     @Test
     public void testEncryptionV10RSA() throws Exception {
         CDOCv1.encrypt(CDOCv1.VERSION.V1_0, tmp.toFile(), payload, Arrays.asList(new X509Certificate[]{rsa}));
+        // The EncryptionProperty thing fails
+        Assert.assertFalse(XML.validate(Files.readAllBytes(tmp)));
     }
 
     @Test
