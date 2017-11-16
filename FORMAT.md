@@ -21,9 +21,30 @@ It defines and clarifies the subset of relevant standards and provides guideline
 ## Overview
 CDOC v2.0 files are essentially [OpenDocument v1.2](https://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part3.html) containers, conforming to [OpenDocument Extended Package](https://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part3.html#__RefHeading__752793_826425813). The mime type is `application/x-cryptodoc` and recommended extension `.cdoc`.
 
-Information about transport keys, recipients etc is stored in `META-INF/recipients.xml` which conforms to [XML-ENC](https://www.w3.org/TR/xmlenc-core/) standard and schema.
+Information about transport keys, recipients etc is stored in `META-INF/recipients.xml` which conforms to [XML-ENC v1.1](https://www.w3.org/TR/xmlenc-core1/) standard and schema.
 
 This arrangement is comparable to ASiC-S ODF containers.
+
+## Container layout
+Overall ZIP container of `example.cdoc`:
+```
+example.cdoc
+   |-- mimetype
+   |-- META-INF
+   |   |-- manifest.xml
+   |   `-- recipients.xml
+   `-- payload.zip
+```
+
+`manifest.xml`:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest:manifest manifest:version="1.2" xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0">
+    <manifest:file-entry manifest:full-path="/" manifest:media-type="application/x-cryptodoc"/>
+    <manifest:file-entry manifest:full-path="payload.zip"
+        manifest:media-type="application/zip" manifest:size="165"/>
+</manifest:manifest>
+```
 
 ## Package requirements
 * The mime type of CDOC v2.0 is `application/x-cryptodoc`
@@ -31,10 +52,12 @@ This arrangement is comparable to ASiC-S ODF containers.
 * The mime type SHOULD be present in Zip comment (ASiC 6.2.1 clause 3)
 * The `mimetype` file MUST be present, together with the `media-type` manifest element for the package (See [OpenDocument: 3.3 MIME Media Type](https://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part3.html#MIME_type_stream))
 * The format MAY be used with ZIP64 extension.
-* Storage of encrypted files MUST follow the rules laid down in [OpenDocument section 3.4.1](https://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part3.html#__RefHeading__752813_826425813), regarding deflation before storage and actual size in manifest.
-* Multiple encrypted files MUST be encapsulated as ZIP containers, which implementations MAY display inline after encryption (ASiC baseline B.1.3)
+* Storage of encrypted files MUST follow the rules laid down in [OpenDocument section 3.4.1](https://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part3.html#__RefHeading__752813_826425813), regarding actual payload size in manifest.
+
+## Payload requirements
+* Multiple files MUST be encapsulated in a ZIP container before encryption, which implementations SHOULD display inline after decryption (ASiC baseline B.1.3)
 * Payload ZIP encapsulation MAY be used for a single file, to hide original file name
-* The name of the encapsulated ZIP files SHOULD be `payload.zip`
+* The name of the encapsulated ZIP file SHOULD be `payload.zip`
 * The payload of the package MUST NOT contain subfolders. All encrypted files MUST reside in the root folder.
 
 ## Implementation requirements
