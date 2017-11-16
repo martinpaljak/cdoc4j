@@ -45,7 +45,7 @@ import java.util.*;
 /**
  * Utilities to work with XML in a safe and sane way.
  */
-public class XML {
+public final class XML {
     public static final XPath xPath;
 
     static {
@@ -73,7 +73,6 @@ public class XML {
         }
         xPath = XPathFactory.newInstance().newXPath();
 
-        @SuppressWarnings("serial")
         HashMap<String, String> prefixes = new HashMap<>();
         prefixes.put("ddoc", "http://www.sk.ee/DigiDoc/v1.3.0#");
         prefixes.put("xenc", "http://www.w3.org/2001/04/xmlenc#");
@@ -102,7 +101,7 @@ public class XML {
 
     public static Document stream2dom(InputStream in) throws IOException {
         try {
-            return XML.getSecureParser().parse(in);
+            return getSecureParser().parse(in);
         } catch (SAXException e) {
             throw new IOException("Could not parse XML", e);
         }
@@ -111,8 +110,7 @@ public class XML {
     public static byte[] dom2bytes(Document doc) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         dom2stream(doc, bos);
-        byte[] xml = bos.toByteArray();
-        return xml;
+        return bos.toByteArray();
     }
 
     public static void dom2stream(Document doc, OutputStream out) {
@@ -142,9 +140,15 @@ public class XML {
         return n.getLength() == 0 ? Collections.emptyList() : new NodeListWrapper(n);
     }
 
-    // Schema validator
-    public static final boolean validate(byte[] d) {
+    public static boolean validate_cdoc(byte[] d) throws IOException {
         try (InputStream schema = XML.class.getResourceAsStream("schema/cdoc.xsd")) {
+            return validate(d, schema);
+        }
+    }
+
+    // Schema validator
+    public static final boolean validate(byte[] d, InputStream schema) {
+        try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
             dbf.setValidating(true);

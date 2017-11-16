@@ -35,15 +35,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
-import java.util.List;
+import java.util.Collection;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-public class CDOCv2 {
+public final class CDOCv2 {
 
     public static final String MIMETYPE = "application/x-cryptodoc";
 
-    public static void encrypt(File to, List<File> files, List<X509Certificate> recipients) throws GeneralSecurityException, NamingException, IOException {
+    public static void encrypt(File to, Collection<File> files, Collection<X509Certificate> recipients) throws GeneralSecurityException, NamingException, IOException {
 
         // Make the AES key that will be used to encrypt the payload
         KeyGenerator keygen = KeyGenerator.getInstance("AES");
@@ -51,7 +51,7 @@ public class CDOCv2 {
         SecretKey dek = keygen.generateKey();
 
         // Construct the overall document.
-        Document recipientsXML = CDOCv1.makeRecipientsXML(recipients, dek);
+        Document recipientsXML = CDOCv1.makeRecipientsXML(CDOC.VERSION.V2_0, recipients, dek);
 
         // Add payload reference to recipients.xml
         Element cipherdata = recipientsXML.createElement("xenc:CipherData");
@@ -75,7 +75,7 @@ public class CDOCv2 {
 
 
         byte[] rcpts = XML.dom2bytes(recipientsXML);
-        if (!XML.validate(rcpts)) {
+        if (!XML.validate_cdoc(rcpts)) {
             System.out.println("recipients.xml does not validate!");
         }
 
@@ -91,7 +91,7 @@ public class CDOCv2 {
     }
 
     // Wrap all files into payload.zip, usign STORE
-    public static byte[] makePayload(List<File> files) throws IOException {
+    public static byte[] makePayload(Collection<File> files) throws IOException {
         ByteArrayOutputStream payload_b = new ByteArrayOutputStream();
         ZipOutputStream payload_z = new ZipOutputStream(payload_b);
         //payload_z.setLevel(9);

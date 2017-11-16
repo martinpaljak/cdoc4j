@@ -30,13 +30,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class Manifest {
     private String mimetype; // mimetype of the package
-    private List<ManifestEntry> files = new ArrayList<>(); // files listed in the manifest
+    private ArrayList<ManifestEntry> files = new ArrayList<>(); // files listed in the manifest
 
     public Manifest(String mimetype) {
         this.mimetype = mimetype;
@@ -63,7 +63,7 @@ public class Manifest {
             //return false;
         }
 
-        List<ManifestEntry> files = new ArrayList<>();
+        ArrayList<ManifestEntry> files = new ArrayList<>();
         //NodeList files = mf.getDocumentElement().getChildNodes();
         for (Node n : XML.asList(mf.getDocumentElement().getElementsByTagName("manifest:file-entry"))) {
             String fullPath = n.getAttributes().getNamedItem("manifest:full-path").getTextContent();
@@ -101,7 +101,7 @@ public class Manifest {
         return mimetype;
     }
 
-    public Set<ManifestEntry> getFiles() {
+    public Collection<ManifestEntry> getFiles() {
         return new HashSet<>(files);
     }
 
@@ -133,7 +133,7 @@ public class Manifest {
         }
         // Add all files
         for (ManifestEntry f : files) {
-            // TODO: conditional ignorance of META-INF?
+            // TODO: conditional ignoring of META-INF?
             if (f.path.startsWith("META-INF/")) {
                 continue;
             }

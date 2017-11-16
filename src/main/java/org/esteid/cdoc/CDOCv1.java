@@ -51,15 +51,14 @@ import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
 import java.util.Collection;
-import java.util.List;
 
 // Generates CDOC v1.0 and v1.1 encrypted documents.
 // Works on files.
-public class CDOCv1 {
+public final class CDOCv1 {
 
-    public static void encrypt(VERSION v, File to, List<File> files, List<X509Certificate> recipients) throws GeneralSecurityException, NamingException, IOException {
+    public static void encrypt(CDOC.VERSION v, File to, Collection<File> files, Collection<X509Certificate> recipients) throws GeneralSecurityException, NamingException, IOException {
         // V1.0 can only be used with RSA keys
-        if (v == VERSION.V1_0) {
+        if (v == CDOC.VERSION.V1_0) {
             for (X509Certificate c : recipients) {
                 if (!c.getPublicKey().getAlgorithm().equals("RSA"))
                     throw new IllegalArgumentException("Can do CDOC v1.0 only with RSA keys");
@@ -68,18 +67,21 @@ public class CDOCv1 {
 
         // Make the AES key that will be used to encrypt the payload
         KeyGenerator keygen = KeyGenerator.getInstance("AES");
-        keygen.init(256);
+        if (v == CDOC.VERSION.V1_1)
+            keygen.init(256);
+        else
+            keygen.init(128);
         SecretKey dek = keygen.generateKey();
 
         // Construct the overall document.
-        Document recipientsXML = makeRecipientsXML(recipients, dek);
+        Document recipientsXML = makeRecipientsXML(v, recipients, dek);
 
         // Calculate payload
         byte[] data = makePayload(files);
 
         byte[] cgram;
         // Encrypt payload
-        if (v == VERSION.V1_0) {
+        if (v == CDOC.VERSION.V1_0) {
             byte[] iv = new byte[16];
             CDOC.random.nextBytes(iv);
             cgram = CDOCv1.encrypt_cbc(data, dek, iv);
@@ -99,19 +101,17 @@ public class CDOCv1 {
 
         // XXX: Add comments or file will not have content
         Element props = recipientsXML.createElement("xenc:EncryptionProperties");
-        for (int i = 0; i < files.size(); i++) {
-            Element prop = recipientsXML.createElement("xenc:EncryptionProperty");
-            prop.setAttribute("Name", "orig_file");
-            prop.setTextContent("😳 - decrypt me!|1|application/octet-stream|D" + i);
-            props.appendChild(prop);
-        }
+        Element prop = recipientsXML.createElement("xenc:EncryptionProperty");
+        prop.setAttribute("Name", "orig_file");
+        prop.setTextContent("☠   DECRYPT FIRST   ☠|666|application/octet-stream|D0");
+        props.appendChild(prop);
         recipientsXML.getDocumentElement().appendChild(props);
 
         // Dump to file
         XML.dom2stream(recipientsXML, Files.newOutputStream(to.toPath()));
     }
 
-    public static Document makeRecipientsXML(Collection<X509Certificate> recipients, SecretKey dek) throws GeneralSecurityException, NamingException {
+    public static Document makeRecipientsXML(CDOC.VERSION v, Collection<X509Certificate> recipients, SecretKey dek) throws GeneralSecurityException, NamingException {
         // Construct recipients.xml.
         Document cdoc = XML.getDocument();
 
@@ -122,11 +122,18 @@ public class CDOCv1 {
         root.setAttribute("xmlns:dsig11", "http://www.w3.org/2009/xmldsig11#");
 
         cdoc.appendChild(root);
-        // optional MimeType FIXME
+        if (v == CDOC.VERSION.V1_0 || v== CDOC.VERSION.V1_1) {
+            root.setAttribute("MimeType", "http://www.sk.ee/DigiDoc/v1.3.0/digidoc.xsd");
+        }
 
-        // See update FIXME - use 256 gcm
+        // Data encryption.
         Element encmethod = cdoc.createElement("xenc:EncryptionMethod");
-        encmethod.setAttribute("Algorithm", "http://www.w3.org/2009/xmlenc11#aes256-gcm");
+        int keysize = dek.getEncoded().length * 8;
+        if (keysize == 128) {
+            encmethod.setAttribute("Algorithm", "http://www.w3.org/2001/04/xmlenc#aes128-cbc");
+        } else if (keysize == 256) {
+            encmethod.setAttribute("Algorithm", "http://www.w3.org/2009/xmlenc11#aes256-gcm");
+        }
         root.appendChild(encmethod);
 
         // Key infos
@@ -138,6 +145,7 @@ public class CDOCv1 {
             Element enckey = toRecipient(cdoc, crt, dek);
             keyinfo.appendChild(enckey);
         }
+        // For XML encapsulation, caller adds children
         return cdoc;
     }
 
@@ -374,7 +382,7 @@ public class CDOCv1 {
 
     // Generates a minimalistic SignedDoc that is OK for qdigidoccrypto
     // XXX: this is braindead
-    public static byte[] makePayload(List<File> files) throws IOException {
+    public static byte[] makePayload(Collection<File> files) throws IOException {
         Document payload = XML.getDocument();
 
         Element root = payload.createElement("SignedDoc");
@@ -418,12 +426,9 @@ public class CDOCv1 {
             // If the certificate does not have CN, make a hash of the certificate
             // This way we always return something if we have a valid certificate
             return bytesToHex(MessageDigest.getInstance("SHA-256").digest(c.getEncoded()));
-        } catch (InvalidNameException | NoSuchAlgorithmException|CertificateEncodingException e) {
+        } catch (InvalidNameException | NoSuchAlgorithmException | CertificateEncodingException e) {
             throw new CertificateParsingException("Could not fetch common name from certificate", e);
         }
     }
 
-    public enum VERSION {
-        V1_0, V1_1
-    }
 }

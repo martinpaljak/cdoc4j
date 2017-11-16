@@ -29,9 +29,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
-public class CDOC {
+public final class CDOC {
     final static SecureRandom random;
 
     static {
@@ -44,13 +44,13 @@ public class CDOC {
         }
     }
 
-    public static void encrypt(File to, List<File> files, List<X509Certificate> recipients) throws GeneralSecurityException, NamingException, IOException {
+    public static void encrypt(File to, Collection<File> files, Collection<X509Certificate> recipients) throws GeneralSecurityException, NamingException, IOException {
         // TODO: Any logic here, depending on recipients?
-        CDOCv1.encrypt(CDOCv1.VERSION.V1_1, to, files, recipients);
+        CDOCv1.encrypt(VERSION.V1_1, to, files, recipients);
     }
 
-    public static void encrypt(Path to, List<Path> paths, List<X509Certificate> recipients) throws GeneralSecurityException, NamingException, IOException {
-        List<File> fl = new ArrayList<>();
+    public static void encrypt(Path to, Collection<Path> paths, Collection<X509Certificate> recipients) throws GeneralSecurityException, NamingException, IOException {
+        ArrayList<File> fl = new ArrayList<>();
         for (Path p: paths)
             fl.add(p.toFile());
         encrypt( to.toFile(), fl, recipients);
@@ -68,5 +68,9 @@ public class CDOC {
             version = "unknown-error";
         }
         return version;
+    }
+
+    public enum VERSION {
+        V1_0, V1_1, V2_0
     }
 }

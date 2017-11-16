@@ -1,4 +1,5 @@
 import org.apache.commons.io.IOUtils;
+import org.esteid.cdoc.CDOC;
 import org.esteid.cdoc.CDOCv1;
 import org.esteid.cdoc.CDOCv2;
 import org.esteid.cdoc.XML;
@@ -62,14 +63,14 @@ public class TestEncryptDummy {
 
     @Test
     public void testEncryptionV11ECC() throws Exception {
-        CDOCv1.encrypt(CDOCv1.VERSION.V1_1, tmp.toFile(), payload, Arrays.asList(new X509Certificate[]{ecc}));
+        CDOCv1.encrypt(CDOC.VERSION.V1_1, tmp.toFile(), payload, Arrays.asList(new X509Certificate[]{ecc}));
     }
 
     @Test
     public void testEncryptionV10RSA() throws Exception {
-        CDOCv1.encrypt(CDOCv1.VERSION.V1_0, tmp.toFile(), payload, Arrays.asList(new X509Certificate[]{rsa}));
+        CDOCv1.encrypt(CDOC.VERSION.V1_0, tmp.toFile(), payload, Arrays.asList(new X509Certificate[]{rsa}));
         // The EncryptionProperty thing fails
-        Assert.assertFalse(XML.validate(Files.readAllBytes(tmp)));
+        Assert.assertFalse(XML.validate_cdoc(Files.readAllBytes(tmp)));
     }
 
     @Test
@@ -84,7 +85,7 @@ public class TestEncryptDummy {
 
     @Test(expected = IllegalArgumentException.class)
     public void testEncryptionV10ECC() throws Exception {
-        CDOCv1.encrypt(CDOCv1.VERSION.V1_0, tmp.toFile(), payload, Arrays.asList(new X509Certificate[]{ecc}));
+        CDOCv1.encrypt(CDOC.VERSION.V1_0, tmp.toFile(), payload, Arrays.asList(new X509Certificate[]{ecc}));
     }
 
 }
