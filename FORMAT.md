@@ -1,27 +1,25 @@
 # CDOC 2.0 specification
-> DRAFT v0.4 07-11-2017, martin.paljak@eesti.ee
+> DRAFT v0.5 17-11-2017, martin.paljak@eesti.ee
 
 ## Introduction
 CDOC is a file format for storing encrypted data together with data for/about intended recipients.
 
-The main goals of CDOC v2.0 format over [CDOC v1.0](https://github.com/martinpaljak/idcrypt/wiki/CDOC-1.0) (and CDOC-1.1) are resource-effectiveness when processing containers (less XML parsing), compatibility with ASiC containers (based on OpenDocument v1.2 ZIP packages) and general alignment with newer and future algorithms.
+The main goals of CDOC v2.0 format over [CDOC v1.0](https://github.com/martinpaljak/idcrypt/wiki/CDOC-1.0) (and CDOC v1.1) are resource-effectiveness when processing containers (less XML parsing), compatibility with ASiC containers (based on OpenDocument v1.2 ZIP packages) and general alignment with newer and future algorithms.
 
 It defines and clarifies the subset of relevant standards and provides guidelines and requirements for compliant implementations.
 
 ## References
-- [OpenDocument v1.2 part 3: packages](https://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part3.html)
-- [ETSI EN 319 162-1 V1.1.1 (ASiC baseline containers)](http://www.etsi.org/deliver/etsi_en/319100_319199/31916201/01.01.01_60/en_31916201v010101p.pdf)
-- [ETSI EN 319 162-2 V1.1.1 (Additional ASiC containers)](http://www.etsi.org/deliver/etsi_en/319100_319199/31916202/01.01.01_60/en_31916202v010101p.pdf)
-- [XML Encryption Syntax and Processing](https://www.w3.org/TR/xmlenc-core/)
-- [XML Encryption Syntax and Processing Version 1.1](https://www.w3.org/TR/xmlenc-core1/)
-- [XML Signature Syntax and Processing (Second Edition)](https://www.w3.org/TR/xmldsig-core/)
-- [RFC 6931](https://tools.ietf.org/html/rfc6931)
-
+- [ODF] [OpenDocument v1.2 part 3: packages](https://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part3.html)
+- [ASIC1] [ETSI EN 319 162-1 V1.1.1 (ASiC baseline containers)](http://www.etsi.org/deliver/etsi_en/319100_319199/31916201/01.01.01_60/en_31916201v010101p.pdf)
+- [ASIC2] [ETSI EN 319 162-2 V1.1.1 (Additional ASiC containers)](http://www.etsi.org/deliver/etsi_en/319100_319199/31916202/01.01.01_60/en_31916202v010101p.pdf)
+- [XML-ENC] [XML Encryption Syntax and Processing](https://www.w3.org/TR/xmlenc-core/)
+- [XML-ENC1 ][XML Encryption Syntax and Processing Version 1.1](https://www.w3.org/TR/xmlenc-core1/)
+- [DSIG] [XML Signature Syntax and Processing (Second Edition)](https://www.w3.org/TR/xmldsig-core/)
 
 ## Overview
-CDOC v2.0 files are essentially [OpenDocument v1.2](https://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part3.html) containers, conforming to [OpenDocument Extended Package](https://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part3.html#__RefHeading__752793_826425813). The mime type is `application/x-cryptodoc` and recommended extension `.cdoc`.
+CDOC v2.0 files are essentially [OpenDocument v1.2](https://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part3.html) containers, conforming to [OpenDocument Extended Package](https://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part3.html#__RefHeading__752793_826425813) ([ODF] 2.2.2). The mime type is `application/x-cdoc+zip` and recommended extension `.cdoc`.
 
-Information about transport keys, recipients etc is stored in `META-INF/recipients.xml` which conforms to [XML-ENC v1.1](https://www.w3.org/TR/xmlenc-core1/) standard and schema.
+Information about transport keys, recipients etc is stored in `META-INF/recipients.xml` which conforms to [XML-ENC1](https://www.w3.org/TR/xmlenc-core1/) standard and schema.
 
 This arrangement is comparable to ASiC-S ODF containers.
 
@@ -35,36 +33,57 @@ example.cdoc
    |   `-- recipients.xml
    `-- payload.zip
 ```
-
-`manifest.xml`:
+Where:
+- `mimetype` contains `application/x-cryptodoc`
+- `manifest.xml` contains
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<manifest:manifest manifest:version="1.2" xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0">
-    <manifest:file-entry manifest:full-path="/" manifest:media-type="application/x-cryptodoc"/>
+<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0"
+                   manifest:version="1.2">
+    <manifest:file-entry manifest:full-path="/"
+                         manifest:media-type="application/x-cryptodoc"/>
     <manifest:file-entry manifest:full-path="payload.zip"
-        manifest:media-type="application/zip" manifest:size="165"/>
+                         manifest:media-type="application/zip"
+                         manifest:size="..."/>
 </manifest:manifest>
 ```
-
+- `recipients.xml` looks like
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<xenc:EncryptedData xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+                    xmlns:dsig11="http://www.w3.org/2009/xmldsig11#"
+                    xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
+                    xmlns:xenc11="http://www.w3.org/2009/xmlenc11#">
+    <xenc:EncryptionMethod Algorithm="..."/>
+    <ds:KeyInfo>...</ds:KeyInfo>
+    ...
+    <xenc:CipherData>...</xenc:CipherData>
+</xenc:EncryptedData>
+```
 ## Package requirements
-* The mime type of CDOC v2.0 is `application/x-cryptodoc`
+* The mime type of CDOC v2.0 is `application/x-cdoc+zip`
 * The file extension SHOULD be `.cdoc`
 * The mime type SHOULD be present in Zip comment (ASiC 6.2.1 clause 3)
 * The `mimetype` file MUST be present, together with the `media-type` manifest element for the package (See [OpenDocument: 3.3 MIME Media Type](https://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part3.html#MIME_type_stream))
 * The format MAY be used with ZIP64 extension.
-* Storage of encrypted files MUST follow the rules laid down in [OpenDocument section 3.4.1](https://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part3.html#__RefHeading__752813_826425813), regarding actual payload size in manifest.
+* Storage of encrypted file MUST follow the rules laid down in [OpenDocument section 3.4.1](https://docs.oasis-open.org/office/v1.2/os/OpenDocument-v1.2-os-part3.html#__RefHeading__752813_826425813), regarding actual payload size in manifest and usage of STORED method.
+* The container MAY include other files in addition to `META-INF/recipients.xml` and `payload.zip`
 
 ## Payload requirements
-* Multiple files MUST be encapsulated in a ZIP container before encryption, which implementations SHOULD display inline after decryption (ASiC baseline B.1.3)
-* Payload ZIP encapsulation MAY be used for a single file, to hide original file name
+* Plaintext files MUST be encapsulated in a ZIP container before encryption, which implementations SHOULD display inline after decryption (ASiC baseline B.1.3)
 * The name of the encapsulated ZIP file SHOULD be `payload.zip`
 * The payload of the package MUST NOT contain subfolders. All encrypted files MUST reside in the root folder.
+* The ZIP compression method of the files in the payload ZIP MUST be DEFLATE
+
+## Encryption metadata requirements
+* `META-INF/recipients.xml` MUST validate against [XML-ENC1] schema
 
 ## Implementation requirements
 * Implementations SHOULD support ZIP64 for files larger than 4GB
   * Lack of support for ZIP64 MUST be documented in accompanying documentation
-* Implementations SHOULD allow to decrypt files which lack proper MIME information
-* Formatting of encrypted files (IV, padding, authentication tags etc) MUST conform to XML-ENC (XML-ENC 5.2: Block Encryption Algorithms)
+* Implementations SHOULD allow to decrypt containers which lack proper MIME information, based on the presence of `META-INF/recipients.xml`
+* Formatting of encrypted files (IV, padding, authentication tags etc) MUST conform to [XML-ENC1] 5.2: Block Encryption Algorithms.
+* Implementations MUST support transport key encryption with RSA PKCS#1 v1.5 and ECDH-ES with AES KeyWrap (usage with ID-card). Implementations MAY support other schemes (like out-of-band transport keys)
 
 ## ID-card profile
 
@@ -78,10 +97,12 @@ The use with Estonian ID-card defaults to:
 ```
 <EncryptedData>
   <EncryptionMethod Algorithm='http://www.w3.org/2009/xmlenc11#aes256-gcm'/>
-  <EncryptedKey>
-    <EncryptionMethod Algorithm='http://www.w3.org/2001/04/xmlenc#rsa-1_5'/>
-    ...
-  </EncryptedKey>
+  <KeyInfo>
+    <EncryptedKey>
+      <EncryptionMethod Algorithm='http://www.w3.org/2001/04/xmlenc#rsa-1_5'/>
+       ...
+    </EncryptedKey>
+  </KeyInfo>
   ...
 </EncryptedData>
 ```
