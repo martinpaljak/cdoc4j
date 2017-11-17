@@ -76,5 +76,5 @@ zip.close();
 
 ### Supported formats:
 - [CDOC 1.0](https://github.com/martinpaljak/idcrypt/wiki/CDOC-1.0): AES-128 CBC, *RSA recipients only*, XML base64 container (supported by [@open-eid](https://github.com/open-eid) software)
-- **[CDOC 1.1](https://github.com/martinpaljak/cdoc/blob/master/src/test/resources/CDOC-A-101-7.pdf) (default):** AES-256 GCM, RSA and ECC recipients, XML base64 container (supported _soon_ by [@open-eid](https://github.com/open-eid) software)
+- **[CDOC 1.1](https://github.com/martinpaljak/cdoc/blob/master/docs/CDOC-A-101-7.pdf) (default):** AES-256 GCM, RSA and ECC recipients, XML base64 container (supported _soon_ by [@open-eid](https://github.com/open-eid) software)
 - [CDOC 2.0](FORMAT.md): AES-256 GCM, RSA and ECC recipients, ZIP container (_at least_ 30%, usually 50% smaller files compared to XML, not (yet) supported by @open-eid software) 
