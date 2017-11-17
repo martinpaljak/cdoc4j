@@ -1,6 +1,6 @@
 # CDOC · [![Build Status](https://travis-ci.org/martinpaljak/cdoc.svg?branch=master)](https://travis-ci.org/martinpaljak/cdoc) [![Coverity status](https://scan.coverity.com/projects/martinpaljak-cdoc/badge.svg?flat=1)](https://scan.coverity.com/projects/martinpaljak-cdoc)  [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.martinpaljak/cdoc/badge.svg)](https://mvnrepository.com/artifact/com.github.martinpaljak/cdoc) [![Javadocs](https://www.javadoc.io/badge/com.github.martinpaljak/cdoc.svg)](https://www.javadoc.io/doc/com.github.martinpaljak/cdoc) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/martinpaljak/cdoc/blob/master/LICENSE)
 
-Small Java library for _creating_ encrypted CDOC files, with Elliptic Curve support ("CDOC 1.1 amendment").
+Small Java library for handling CDOC encryption format, with Elliptic Curve support ("CDOC 1.1 amendment").
 
 - Include dependency
 ```xml
@@ -10,26 +10,68 @@ Small Java library for _creating_ encrypted CDOC files, with Elliptic Curve supp
     <version>0.0.2</version>
 </dependency>
 ```
-- Write code, with the help of [javadoc](https://www.javadoc.io/doc/com.github.martinpaljak/cdoc)
+- Get coding!
+
+## Creating CDOC files
+```java
+import org.esteid.cdoc.CDOCBuilder;
+import static org.esteid.cdoc.CDOC.VERSION.CDOC_V2_0;
+
+// 0. Create the builder
+CDOCBuilder builder = CDOC.builder();
+// Override default CDOC 1.1 version
+builder.setVersion(CDOC_V2_0);
+
+// 1. Where to write the output
+builder.setOutputStream(new FileOutputStream("output.cdoc"));
+
+// 2. Set recipients
+X509Certificate cert = ...
+builder.addRecipient(cert);
+
+// 3. For legacy XML containers, add files via any of the following methods
+builder.addStream("test1.txt", new URL("http://www.example.com/test1.txt")); // or ByteArrayInputStream
+builder.addFile(new File("test2.txt"));
+builder.addPath(Paths.get("test3.txt"));
+builder.build(); // Writes it to output stream
+builder.buildToStream(new FileOutputStream("otherfile.cdoc"));
+```
+
+## Opening CDOC files
 ```java
 import org.esteid.cdoc.CDOC;
 
-// 1. Where to write the output
-File output = File.createTempFile("foobar", null);
+// 1. Either from a file
+CDOC cdoc = CDOC.open(new File("test.cdoc"));
 
-// 2. Which files to encrypt
-List<File> files = new ArrayList<>();
-files.add(new File("/some/file"));
-files.add(new File("/some/other/file"));
+// 2. Or from an InputStream
+InputStream input = new URL("http://example.com/sample.cdoc").openStream();
+CDOC cdoc = CDOC.from(input);
 
-// 3. To whom to encrypt
-List<X509Certificate> recipients = new ArrayList<>();
-recipients.add();
+// 3. Once the file has been opened, get recipients 
+List<Recipient> recipients = cdoc.getRecipients();
 
-// 4. Encrypt.
-CDOC.encrypt(output, files, recipients);
+// 4. Information in a Recipient object allows to construct the transport key for decryption
+KeyPair kp = ...
+SecretKey key = Decrypt.getKey(kp, recipients.get(0));
 
-// 5. output is now an encrypted file
+// 5. Knowing the transport key allows to access the encrypted files
+Map<String, byte[]> files = cdoc.getFiles(key); // Can consume a lot of memory with large files
+```
+
+## CDOC 2.0 and ZIP streams
+CDOC 2.0 is designed to be more resource efficient and flexible than CDOC 1.x. CDOC 2.0 is a standard ODF ZIP container with an inner ZIP file, which allows to use standard Java [ZipInputStream](https://docs.oracle.com/javase/8/docs/api/java/util/zip/ZipInputStream.html)/[ZipOutputStream](https://docs.oracle.com/javase/8/docs/api/java/util/zip/ZipOutputStream.html) interfaces. This way you can easily encrypt and decrypt files with sizes in several gigabytes without running out of memory.
+
+```java
+// To open the payload as a ZipInputStream
+ZipInputStream zip = cdoc.getZipInputStream(key);
+
+// To add files via ZipOutputStream
+ZipOutputStream zip = CDOC.builder(CDOC_V2_0).addRecipient(...).buildZipOutputStream();
+zip.putNextEntry(new ZipEntry("test.txt"));
+IOUtils.copy(new InputSream(...), zip);
+zip.closeEntry();
+zip.close();
 ```
 
 ### Supported formats:
