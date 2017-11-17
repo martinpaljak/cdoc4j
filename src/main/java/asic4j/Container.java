@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.CRC32;
@@ -36,9 +37,11 @@ import java.util.zip.ZipOutputStream;
 
 // Class for OpenDocument ZIP container
 // Only for writing at the moment.
-public class Container {
+public final class Container {
     // Overall manifest
-    Manifest mf;
+    private Manifest mf;
+    private boolean privacy = true;
+    private ZipOutputStream zos;
 
     // Payload files
     private Map<ManifestEntry, byte[]> files;
@@ -46,10 +49,24 @@ public class Container {
     // META-INF files
     private Map<String, byte[]> metas;
 
-    public Container(String mimetype) {
-        mf = new Manifest(mimetype);
+    public Container(String mimetype, OutputStream out, boolean privacy) {
+        mf = Manifest.create(mimetype);
+        this.zos = new ZipOutputStream(out, StandardCharsets.UTF_8);
         files = new HashMap<>();
         metas = new HashMap<>();
+        this.privacy = privacy;
+    }
+
+    // Remove tiem metadata, to not leak times without decrypting
+    public static ZipEntry strip(ZipEntry e) {
+        e.setCreationTime(FileTime.fromMillis(0));
+        e.setLastAccessTime(FileTime.fromMillis(0));
+        e.setLastModifiedTime(FileTime.fromMillis(0));
+        return e;
+    }
+
+    public Manifest getManifest() {
+        return mf;
     }
 
     public void put(Path p, String mimetype) throws IOException {
@@ -61,8 +78,14 @@ public class Container {
     }
 
     public void put(String filename, String mimetype, byte[] data) {
-        ManifestEntry newmf = mf.addFile(filename, mimetype, data.length);
-        files.put(newmf, data);
+        ManifestEntry mfe = new ManifestEntry(filename, mimetype, data.length);
+        mf.addFile(mfe);
+        files.put(mfe, data);
+    }
+
+    public void declare(String filename, String mimetype, long length) {
+        ManifestEntry mfe = new ManifestEntry(filename, mimetype, length);
+        mf.addFile(mfe);
     }
 
     public void put_meta(String fname, byte[] data) {
@@ -70,55 +93,69 @@ public class Container {
         metas.put(fname, data);
     }
 
-    /**
-     * It is the responsibility of the caller to close the output stream.
-     *
-     * @param out
-     * @throws IOException
-     */
-    public void write(OutputStream out) throws IOException {
-        ZipOutputStream zos = new ZipOutputStream(out, StandardCharsets.UTF_8);
-        // Get mimetype
+    public void writeHeader() throws IOException {
+        // mimetype commend
         String mimetype = mf.getMimeType();
         zos.setComment("mimetype=" + mimetype);
 
-        // mimetype
+        // mimetype as first file
         ZipEntry mt = new ZipEntry("mimetype");
         mt.setMethod(ZipEntry.STORED);
         mt.setSize(mimetype.getBytes(StandardCharsets.US_ASCII).length);
         CRC32 crc32 = new CRC32();
         crc32.update(mimetype.getBytes(StandardCharsets.US_ASCII));
         mt.setCrc(crc32.getValue());
+        if (privacy)
+            mt = strip(mt);
         zos.putNextEntry(mt);
         zos.write(mimetype.getBytes(StandardCharsets.US_ASCII));
         zos.closeEntry();
+    }
 
-        // manifest
+    public void writeManifest() throws IOException {
         ZipEntry zmf = new ZipEntry("META-INF/manifest.xml");
-        zmf.setComment("asic4j/" + CDOC.getVersion());
+        if (!privacy)
+            zmf.setComment("asic4j/" + CDOC.getLibraryVersion());
+        if (privacy)
+            zmf = strip(zmf);
         zos.putNextEntry(zmf);
         mf.toStream(zos);
         zos.closeEntry();
+    }
 
+    public void writeMetas() throws IOException {
         // Meta files
         for (Map.Entry<String, byte[]> fentry : metas.entrySet()) {
             ZipEntry ze = new ZipEntry(fentry.getKey());
             ze.setMethod(ZipEntry.DEFLATED);
             ze.setSize(fentry.getValue().length);
+            if (privacy)
+                ze = strip(ze);
             zos.putNextEntry(ze);
             zos.write(fentry.getValue());
             zos.closeEntry();
         }
+    }
 
-        // Payload Files themselves
+    public ZipOutputStream getZipOutputStream() {
+        return zos;
+    }
+
+    public void write() throws IOException {
+        writeHeader();
+        writeMetas();
+        // Payload files
         for (Map.Entry<ManifestEntry, byte[]> fentry : files.entrySet()) {
             ZipEntry ze = new ZipEntry(fentry.getKey().path);
             ze.setMethod(ZipEntry.DEFLATED);
             ze.setSize(fentry.getKey().size); // XXX: or value.size ?
+            if (privacy)
+                ze = strip(ze);
             zos.putNextEntry(ze);
             zos.write(fentry.getValue());
             zos.closeEntry();
         }
+        writeManifest();
 
         // Done
         zos.finish();

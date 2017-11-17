@@ -21,6 +21,9 @@
  */
 package org.esteid.cdoc;
 
+import org.apache.commons.io.input.CloseShieldInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -47,6 +50,7 @@ import java.util.*;
  */
 public final class XML {
     public static final XPath xPath;
+    private final static Logger log = LoggerFactory.getLogger(XML.class);
 
     static {
         final class NSContext implements NamespaceContext {
@@ -77,6 +81,8 @@ public final class XML {
         prefixes.put("ddoc", "http://www.sk.ee/DigiDoc/v1.3.0#");
         prefixes.put("xenc", "http://www.w3.org/2001/04/xmlenc#");
         prefixes.put("ds", "http://www.w3.org/2000/09/xmldsig#");
+        prefixes.put("xenc11", "http://www.w3.org/2009/xmlenc11#");
+        prefixes.put("dsig11", "http://www.w3.org/2009/xmldsig11#");
 
         NSContext nsctx = new NSContext(prefixes);
         xPath.setNamespaceContext(nsctx);
@@ -95,13 +101,14 @@ public final class XML {
             dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
             return dbf.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
-            throw new RuntimeException("Could not create XML parser", e);
+            throw new RuntimeException("Could not build XML parser", e);
         }
     }
 
     public static Document stream2dom(InputStream in) throws IOException {
         try {
-            return getSecureParser().parse(in);
+            // XXX: stupid parser closes my streams....
+            return getSecureParser().parse(new CloseShieldInputStream(in));
         } catch (SAXException e) {
             throw new IOException("Could not parse XML", e);
         }
@@ -132,7 +139,7 @@ public final class XML {
             DocumentBuilder db = dbf.newDocumentBuilder();
             return db.newDocument();
         } catch (ParserConfigurationException e) {
-            throw new RuntimeException("Could not create DocumentBuilder", e);
+            throw new RuntimeException("Could not build DocumentBuilder", e);
         }
     }
 
@@ -141,7 +148,7 @@ public final class XML {
     }
 
     public static boolean validate_cdoc(byte[] d) throws IOException {
-        try (InputStream schema = XML.class.getResourceAsStream("schema/cdoc.xsd")) {
+        try (InputStream schema = XML.class.getResourceAsStream("schema/xenc-schema-11.xsd")) {
             return validate(d, schema);
         }
     }
@@ -166,8 +173,6 @@ public final class XML {
 
             db.setEntityResolver((publicId, systemId) -> {
                 String[] allowed = new String[]{"xenc-schema.xsd", "datatypes.dtd", "XMLSchema.dtd", "xenc-schema-11.xsd", "xmldsig-core-schema.xsd"};
-                //System.out.println("Want " + publicId + " " + systemId);
-                String[] p = systemId.split("/");
 
                 for (String f : allowed) {
                     if (systemId.endsWith(f))
@@ -195,10 +200,10 @@ public final class XML {
             });
 
             db.parse(new ByteArrayInputStream(d));
-            System.out.println("Total of " + warnings.size() + " warnings or errors");
+            log.debug("Total of {} warnings or errors", warnings.size());
             return warnings.size() == 0;
         } catch (ParserConfigurationException | SAXException | IOException e) {
-            System.out.println("Failed to validate: " + e.getMessage());
+            log.error("Failed to validate: {} ", e.getMessage());
             return false;
         }
     }

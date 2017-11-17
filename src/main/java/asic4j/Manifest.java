@@ -30,37 +30,31 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collections;
+import java.util.List;
 
 public class Manifest {
+    ArrayList<String> errors = new ArrayList<>();
     private String mimetype; // mimetype of the package
     private ArrayList<ManifestEntry> files = new ArrayList<>(); // files listed in the manifest
 
-    public Manifest(String mimetype) {
+    private Manifest(String mimetype) {
         this.mimetype = mimetype;
     }
 
-    public static Manifest fromStream(InputStream in) throws IOException {
-        return fromStream(in, null);
-    }
-
-    // TODO: get rid of System.err
     public static Manifest fromStream(InputStream in, String assumedMime) throws IOException {
+        ArrayList<String> errors = new ArrayList<>();
         String packageMimeType = null;
         Document mf = XML.stream2dom(in);
 
         // TODO: possibly check against (RNG) schema?
 
-        // Check version. We expect 1.2s
+        // Check version. We expect 1.2
         String version = mf.getDocumentElement().getAttribute("manifest:version");
         if (version == null || version.equalsIgnoreCase("")) {
-            System.err.println("Error: No manifest:version!");
-            //return false;
+            errors.add("Error: No manifest:version!");
         } else if (!version.equalsIgnoreCase("1.2")) {
-            System.err.println("Error: manifest:version != 1.2");
-            //return false;
+            errors.add("Error: manifest:version != 1.2");
         }
 
         ArrayList<ManifestEntry> files = new ArrayList<>();
@@ -75,7 +69,7 @@ public class Manifest {
                 // But check the mimetype
                 if (assumedMime != null) {
                     if (!mediaType.equals(assumedMime)) {
-                        System.err.println("Error: mime type does not match expected: " + assumedMime + " vs " + mediaType);
+                        errors.add("Error: mime type does not match expected: " + assumedMime + " vs " + mediaType);
                     }
                 }
             } else {
@@ -94,25 +88,45 @@ public class Manifest {
         for (ManifestEntry f : files) {
             manifest.addFile(f);
         }
+        manifest.errors = errors;
         return manifest;
+    }
+
+    public static Manifest create(String mimetype) {
+        return new Manifest(mimetype);
+    }
+
+    public List<String> getErrors() {
+        return this.errors;
     }
 
     public String getMimeType() {
         return mimetype;
     }
 
-    public Collection<ManifestEntry> getFiles() {
-        return new HashSet<>(files);
+    public void setFileSize(String name, long size) {
+        for (ManifestEntry e : files) {
+            if (e.path.equals(name)) {
+                e.size = size;
+                return;
+            }
+        }
+        throw new IllegalArgumentException(name + " not found");
     }
 
-    public ManifestEntry addFile(String path, String mimetype, long size) {
+    public List<ManifestEntry> getFiles() {
+        return Collections.unmodifiableList(files);
+    }
+
+    public Manifest addFile(String path, String mimetype, long size) {
         ManifestEntry mf = new ManifestEntry(path, mimetype, size);
         files.add(mf);
-        return mf;
+        return this;
     }
 
-    public void addFile(ManifestEntry f) {
+    public Manifest addFile(ManifestEntry f) {
         files.add(f);
+        return this;
     }
 
     // Writes the constructed manifest as XML to the specified stream.
