@@ -50,7 +50,7 @@ import java.util.zip.ZipInputStream;
 public final class CDOC implements AutoCloseable {
     public static final String MIMETYPE = "application/x-cdoc+zip";
     public static final String RECIPIENTS_XML = "META-INF/recipients.xml";
-    public static final String PAYLOAD_ZIP = "META-INF/recipients.xml";
+    public static final String PAYLOAD_ZIP = "payload.zip";
     public static final String GCM_CIPER = "AES/GCM/NoPadding";
 
 
@@ -81,6 +81,7 @@ public final class CDOC implements AutoCloseable {
         this.xml = d;
         this.recipients = new ArrayList<>(recipients);
         this.version = v;
+        log.debug("Loaded CDOC with {} recipients", recipients.size());
     }
 
     public static String getLibraryVersion() {
@@ -289,8 +290,7 @@ public final class CDOC implements AutoCloseable {
                 ByteArrayOutputStream plaintext = new ByteArrayOutputStream();
                 decrypt(dek, plaintext);
                 files = Legacy.extractPayload(plaintext.toByteArray());
-            } else {
-
+            } else if (version == VERSION.CDOC_V2_0) {
                 try (ZipInputStream zin = getZipInputStream(dek)) {
                     ZipEntry e;
                     files = new HashMap<>();
@@ -299,7 +299,8 @@ public final class CDOC implements AutoCloseable {
                         files.put(e.getName(), IOUtils.toByteArray(zin));
                     }
                 }
-            }
+            } else
+                throw new IllegalStateException("Unknown version");
         }
         return files;
     }
