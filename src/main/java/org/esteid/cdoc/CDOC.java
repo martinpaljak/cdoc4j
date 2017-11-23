@@ -43,7 +43,6 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.util.*;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
@@ -51,7 +50,8 @@ public final class CDOC implements AutoCloseable {
     public static final String MIMETYPE = "application/x-cdoc+zip";
     public static final String RECIPIENTS_XML = "META-INF/recipients.xml";
     public static final String PAYLOAD_ZIP = "payload.zip";
-    public static final String GCM_CIPER = "AES/GCM/NoPadding";
+    public static final String GCM_CIPHER = "AES/GCM/NoPadding";
+    public static final String CBC_CIPHER = "AES/CBC/NoPadding";
 
 
     final static SecureRandom random;
@@ -236,7 +236,7 @@ public final class CDOC implements AutoCloseable {
                 byte[] iv = new byte[16];
                 if (in.read(iv, 0, iv.length) != iv.length)
                     throw new IOException("Not enought bytes to read IV");
-                Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
+                Cipher cipher = Cipher.getInstance(CBC_CIPHER);
                 cipher.init(Cipher.DECRYPT_MODE, dek, new IvParameterSpec(iv));
                 ByteArrayOutputStream plaintext = new ByteArrayOutputStream();
                 try (javax.crypto.CipherOutputStream cout = new javax.crypto.CipherOutputStream(plaintext, cipher)) {
@@ -250,7 +250,7 @@ public final class CDOC implements AutoCloseable {
                 if (in.read(iv, 0, iv.length) != iv.length)
                     throw new IOException("Not enought bytes to read IV");
                 log.trace("IV: {}", Hex.toHexString(iv));
-                Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+                Cipher cipher = Cipher.getInstance(GCM_CIPHER);
                 cipher.init(Cipher.DECRYPT_MODE, dek, new GCMParameterSpec(128, iv));
 
                 try (CipherOutputStream out = new CipherOutputStream(to, cipher)) {
@@ -272,7 +272,7 @@ public final class CDOC implements AutoCloseable {
             if (payload.read(iv, 0, iv.length) != iv.length)
                 throw new IOException("Not enought bytes to read IV");
             log.trace("IV: {}", Hex.toHexString(iv));
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            Cipher cipher = Cipher.getInstance(GCM_CIPHER);
             cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(128, iv));
 
             // Decrypt to memory
