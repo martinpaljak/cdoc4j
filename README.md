@@ -7,7 +7,7 @@ Small Java library for handling CDOC encryption format, with Elliptic Curve supp
 <dependency>
     <groupId>com.github.martinpaljak</groupId>
     <artifactId>cdoc</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.5</version>
 </dependency>
 ```
 - Get coding!
@@ -59,7 +59,7 @@ SecretKey key = Decrypt.getKey(kp, recipients.get(0));
 Map<String, byte[]> files = cdoc.getFiles(key); // Can consume a lot of memory with large files
 ```
 
-## CDOC 2.0 and ZIP streams
+## ~~CDOC 2.0 and streams~~ (Work in Progress)
 CDOC 2.0 is designed to be more resource efficient and flexible than CDOC 1.x. CDOC 2.0 is a standard ODF ZIP container with an inner ZIP file, which allows to use standard Java [ZipInputStream](https://docs.oracle.com/javase/8/docs/api/java/util/zip/ZipInputStream.html)/[ZipOutputStream](https://docs.oracle.com/javase/8/docs/api/java/util/zip/ZipOutputStream.html) interfaces. This way you can easily encrypt and decrypt files with sizes in several gigabytes without running out of memory.
 
 ```java
