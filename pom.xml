@@ -5,7 +5,7 @@
     <groupId>com.github.martinpaljak</groupId>
     <artifactId>cdoc</artifactId>
     <packaging>jar</packaging>
-    <version>0.0.4-SNAPSHOT</version>
+    <version>0.0.5</version>
     <name>CDOC</name>
     <description>Java library for generating CDOC 1.0/1.1/2.0 files with AES-256 GCM and RSA or ECC recipients
     </description>
