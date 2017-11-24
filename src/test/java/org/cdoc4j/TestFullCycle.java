@@ -1,4 +1,4 @@
-package org.esteid.cdoc;
+package org.cdoc4j;
 
 import org.apache.commons.io.IOUtils;
 import org.esteid.hacker.FakeEstEIDCA;
@@ -24,7 +24,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import static org.esteid.cdoc.CDOC.VERSION;
+import static org.cdoc4j.CDOC.VERSION;
 
 
 public class TestFullCycle {

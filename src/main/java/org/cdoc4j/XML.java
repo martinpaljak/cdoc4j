@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.esteid.cdoc;
+package org.cdoc4j;
 
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.slf4j.Logger;
@@ -148,7 +148,7 @@ public final class XML {
     }
 
     public static boolean validate_cdoc(byte[] d) throws IOException {
-        try (InputStream schema = XML.class.getResourceAsStream("schema/xenc-schema-11.xsd")) {
+        try (InputStream schema = XML.class.getResourceAsStream("xenc-schema.xsd")) {
             return validate(d, schema);
         }
     }
@@ -172,11 +172,11 @@ public final class XML {
             DocumentBuilder db = dbf.newDocumentBuilder();
 
             db.setEntityResolver((publicId, systemId) -> {
-                String[] allowed = new String[]{"xenc-schema.xsd", "datatypes.dtd", "XMLSchema.dtd", "xenc-schema-11.xsd", "xmldsig-core-schema.xsd"};
+                final String[] allowed = new String[]{"xenc-schema.xsd", "datatypes.dtd", "XMLSchema.dtd", "xenc-schema-11.xsd", "xmldsig-core-schema.xsd"};
 
                 for (String f : allowed) {
                     if (systemId.endsWith(f))
-                        return new InputSource(XML.class.getResourceAsStream("schema/" + f));
+                        return new InputSource(XML.class.getResourceAsStream(f));
                 }
                 throw new IOException("No resource available");
             });

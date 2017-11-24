@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.esteid.cdoc;
+package org.cdoc4j;
 
 import org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;

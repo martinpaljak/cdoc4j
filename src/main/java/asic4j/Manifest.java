@@ -21,7 +21,7 @@
  */
 package asic4j;
 
-import org.esteid.cdoc.XML;
+import org.cdoc4j.XML;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

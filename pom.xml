@@ -3,13 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.martinpaljak</groupId>
-    <artifactId>cdoc</artifactId>
+    <artifactId>cdoc4j</artifactId>
     <packaging>jar</packaging>
     <version>0.0.5</version>
-    <name>CDOC</name>
-    <description>Java library for generating CDOC 1.0/1.1/2.0 files with AES-256 GCM and RSA or ECC recipients
+    <name>cdoc4j</name>
+    <description>Java library for handling CDOC 1.0/1.1/2.0 files with AES-256 GCM and RSA or ECC recipients
     </description>
-    <url>https://github.com/martinpaljak/cdoc</url>
+    <url>https://github.com/martinpaljak/cdoc4j</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -26,6 +26,13 @@
             <artifactId>commons-io</artifactId>
             <version>2.6</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -44,12 +51,6 @@
             <artifactId>slf4j-simple</artifactId>
             <version>1.7.25</version>
             <scope>test</scope>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
         </dependency>
 
     </dependencies>
@@ -106,7 +107,7 @@
                 </executions>
                 <configuration>
                     <executable>git</executable>
-                    <outputFile>target/generated-resources/org/esteid/cdoc/pro_version.txt</outputFile>
+                    <outputFile>target/generated-resources/org/cdoc4j/pro_version.txt</outputFile>
                     <arguments>
                         <argument>describe</argument>
                         <argument>--tags</argument>

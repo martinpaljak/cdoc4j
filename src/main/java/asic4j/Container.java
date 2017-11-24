@@ -21,7 +21,7 @@
  */
 package asic4j;
 
-import org.esteid.cdoc.CDOC;
+import org.cdoc4j.CDOC;
 
 import java.io.IOException;
 import java.io.OutputStream;

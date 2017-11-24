@@ -1,5 +1,5 @@
 import org.apache.commons.io.IOUtils;
-import org.esteid.cdoc.*;
+import org.cdoc4j.*;
 import org.esteid.hacker.FakeEstEIDCA;
 import org.junit.*;
 import org.junit.rules.TestName;
@@ -142,7 +142,7 @@ public class TestEncryptDummy {
 
         X509Certificate c = ca.generateUserCertificate(keyPair.getPublic(), false, "Albert", "Einstein",
                 "12345678901", "albert@example.com", new Date(), new Date());
-        System.out.println("Generated " +  c.getSubjectDN());
+        System.out.println("Generated " + c.getSubjectDN());
         // Create
         ByteArrayOutputStream mem = new ByteArrayOutputStream();
         CDOCBuilder creator = new CDOCBuilder(CDOC.VERSION.CDOC_V1_1);

@@ -14,8 +14,8 @@ Small Java library for handling CDOC encryption format, with Elliptic Curve supp
 
 ## Creating CDOC files
 ```java
-import org.esteid.cdoc.CDOCBuilder;
-import static org.esteid.cdoc.CDOC.VERSION.CDOC_V2_0;
+import CDOCBuilder;
+import static CDOC.VERSION.CDOC_V2_0;
 
 // 0. Create the builder
 CDOCBuilder builder = CDOC.builder();
@@ -39,7 +39,7 @@ builder.buildToStream(new FileOutputStream("otherfile.cdoc"));
 
 ## Opening CDOC files
 ```java
-import org.esteid.cdoc.CDOC;
+import CDOC;
 
 // 1. Either from a file
 CDOC cdoc = CDOC.open(new File("test.cdoc"));

@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.esteid.cdoc;
+package org.cdoc4j;
 
 import asic4j.Container;
 import asic4j.Manifest;

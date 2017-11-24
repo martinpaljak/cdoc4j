@@ -1,4 +1,4 @@
-package org.esteid.cdoc;
+package org.cdoc4j;
 
 import org.apache.commons.io.output.CloseShieldOutputStream;
 
