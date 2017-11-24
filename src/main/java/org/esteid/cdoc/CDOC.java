@@ -76,6 +76,7 @@ public final class CDOC implements AutoCloseable {
     private ArrayList<Recipient> recipients;
     private VERSION version;
     private transient Map<String, byte[]> files = null;
+    private String algorithm;
 
     private CDOC(Document d, VERSION v, Collection<Recipient> recipients) {
         this.xml = d;
@@ -185,6 +186,17 @@ public final class CDOC implements AutoCloseable {
         return Collections.unmodifiableList(recipients);
     }
 
+    public String getAlgorithm() {
+        if (algorithm == null) {
+            try {
+                algorithm = XML.xPath.evaluate("/xenc:EncryptedData/xenc:EncryptionMethod/@Algorithm", xml);
+            } catch (XPathExpressionException e) {
+                log.error("EncryptionMethod/@Algorithm not found: {} ", e.getMessage());
+            }
+        }
+        return algorithm;
+    }
+
     // Gets encrypted payload stream
     private InputStream getPayloadStream() throws IOException {
         if (version == VERSION.CDOC_V1_1 || version == VERSION.CDOC_V1_0) {
@@ -245,18 +257,20 @@ public final class CDOC implements AutoCloseable {
                 byte[] pt = Legacy.unpad(plaintext.toByteArray());
                 IOUtils.copy(new ByteArrayInputStream(pt), to);
             } else {
-                // Read IV
                 byte[] iv = new byte[12];
                 if (in.read(iv, 0, iv.length) != iv.length)
                     throw new IOException("Not enought bytes to read IV");
                 log.trace("IV: {}", Hex.toHexString(iv));
+
                 Cipher cipher = Cipher.getInstance(GCM_CIPHER);
                 cipher.init(Cipher.DECRYPT_MODE, dek, new GCMParameterSpec(128, iv));
 
-                try (CipherOutputStream out = new CipherOutputStream(to, cipher)) {
-                    long len = IOUtils.copyLarge(in, out);
-                    log.trace("Streamed {} bytes via CipherOutputStream", len);
-                }
+                // Decrypt to memory
+                byte[] cryptogram = IOUtils.toByteArray(in);
+                byte[] plaintext = cipher.doFinal(cryptogram);
+
+                log.trace("Plaintext is {} bytes", plaintext.length);
+                IOUtils.copy(new ByteArrayInputStream(plaintext), to);
             }
         }
     }

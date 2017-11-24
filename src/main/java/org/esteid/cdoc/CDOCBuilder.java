@@ -30,7 +30,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -38,7 +37,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -79,6 +77,7 @@ public class CDOCBuilder {
 
     public CDOCBuilder withTransportKey(byte[] key) {
         this.key = new SecretKeySpec(key, "AES");
+        checkKey();
         return this;
     }
 
@@ -131,25 +130,26 @@ public class CDOCBuilder {
         return this;
     }
 
-    private void checkKey() throws NoSuchAlgorithmException {
+    private void checkKey() {
         // generate DEK if not explicitly given
         if (key == null) {
-            KeyGenerator keygen = KeyGenerator.getInstance("AES");
+            final byte[] keybytes;
             if (version == CDOC.VERSION.CDOC_V1_0)
-                keygen.init(128);
+                keybytes = new byte[16];
             else
-                keygen.init(256);
-            key = keygen.generateKey();
+                keybytes = new byte[32];
+            CDOC.random.nextBytes(keybytes);
+            key = new SecretKeySpec(keybytes, "AES");
         }
 
         // Check key
         if (version == CDOC.VERSION.CDOC_V1_0) {
             if (key.getEncoded().length != 16) {
-                throw new IllegalStateException("Key must be 16 bytes for AES-128");
+                throw new IllegalArgumentException("Key must be 16 bytes for AES-128");
             }
         } else {
             if (key.getEncoded().length != 32) {
-                throw new IllegalStateException("Key must be 32 bytes for AES-256");
+                throw new IllegalArgumentException("Key must be 32 bytes for AES-256");
             }
         }
     }
