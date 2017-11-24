@@ -267,7 +267,7 @@ final class XMLENC {
                 X509Certificate cert = null;
                 if (algorithm.equals("http://www.w3.org/2001/04/xmlenc#rsa-1_5")) {
                     String certb64 = XML.xPath.evaluate("ds:KeyInfo/ds:X509Data/ds:X509Certificate", n);
-                    if (certb64 != null && certb64 != "") {
+                    if (!(certb64 == null || certb64.isEmpty())) {
                         CertificateFactory cf = CertificateFactory.getInstance("X509");
                         cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(Base64.getMimeDecoder().decode(certb64)));
                     }
@@ -288,7 +288,7 @@ final class XMLENC {
                         throw new IOException("Algorithm not supported: " + kea);
 
                     String certb64 = XML.xPath.evaluate("ds:KeyInfo/xenc:AgreementMethod/xenc:RecipientKeyInfo/ds:X509Data/ds:X509Certificate", n);
-                    if (certb64 != null && certb64 != "") {
+                    if (!(certb64 == null || certb64.isEmpty())) {
                         CertificateFactory cf = CertificateFactory.getInstance("X509");
                         cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(Base64.getMimeDecoder().decode(certb64)));
                     }
