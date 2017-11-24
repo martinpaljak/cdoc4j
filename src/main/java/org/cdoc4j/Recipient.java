@@ -66,7 +66,7 @@ public abstract class Recipient {
     }
 
     public final static class ECDHESRecipient extends Recipient {
-        private final ECPublicKey pubkey;
+        private final ECPublicKey pubkey; // Ephemeral key
         private final byte[] algorithmID;
         private final byte[] partyUInfo;
         private final byte[] partyVInfo;
@@ -79,8 +79,7 @@ public abstract class Recipient {
             this.partyVInfo = Arrays.copyOf(partyv, partyv.length);;
         }
 
-        // XXX: rename
-        public ECPublicKey getPublicKey() {
+        public ECPublicKey getSenderPublicKey() {
             return pubkey;
         }
 

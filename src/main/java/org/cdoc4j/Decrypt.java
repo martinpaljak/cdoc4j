@@ -31,23 +31,29 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
+import java.security.PrivateKey;
 
 public final class Decrypt {
+
     public static SecretKey getKey(KeyPair kp, Recipient r) throws GeneralSecurityException {
-        if (r.getType() == Recipient.TYPE.ECC && kp.getPublic().getAlgorithm().startsWith("EC")) {
-            return getKey(kp, (Recipient.ECDHESRecipient) r);
-        } else if (r.getType() == Recipient.TYPE.RSA && kp.getPublic().getAlgorithm().equals("RSA")) {
-            return getKey(kp, (Recipient.RSARecipient) r);
+        return getKey(kp.getPrivate(), r);
+    }
+
+    public static SecretKey getKey(PrivateKey k, Recipient r) throws GeneralSecurityException {
+        if (r.getType() == Recipient.TYPE.ECC && k.getAlgorithm().startsWith("EC")) {
+            return getKey(k, (Recipient.ECDHESRecipient) r);
+        } else if (r.getType() == Recipient.TYPE.RSA && k.getAlgorithm().equals("RSA")) {
+            return getKey(k, (Recipient.RSARecipient) r);
         } else {
             throw new IllegalArgumentException("Unknown algorithm combination");
         }
     }
 
-    public static SecretKey getKey(KeyPair kp, Recipient.ECDHESRecipient r) throws GeneralSecurityException {
+    public static SecretKey getKey(PrivateKey k, Recipient.ECDHESRecipient r) throws GeneralSecurityException {
         // Derive shared secred
         KeyAgreement ka = KeyAgreement.getInstance("ECDH");
-        ka.init(kp.getPrivate());
-        ka.doPhase(r.getPublicKey(), true);
+        ka.init(k);
+        ka.doPhase(r.getSenderPublicKey(), true);
         return getKey(ka.generateSecret(), r);
     }
 
@@ -66,9 +72,9 @@ public final class Decrypt {
         return (SecretKey) cipher.unwrap(r.getCryptogram(), "AES", Cipher.SECRET_KEY);
     }
 
-    public static SecretKey getKey(KeyPair kp, Recipient.RSARecipient r) throws GeneralSecurityException {
+    public static SecretKey getKey(PrivateKey k, Recipient.RSARecipient r) throws GeneralSecurityException {
         Cipher c = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-        c.init(Cipher.DECRYPT_MODE, kp.getPrivate());
+        c.init(Cipher.DECRYPT_MODE, k);
         SecretKey dek = new SecretKeySpec(c.doFinal(r.getCryptogram()), "AES");
         return dek;
     }
