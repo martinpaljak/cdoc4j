@@ -1,4 +1,4 @@
-# CDOC · [![Build Status](https://travis-ci.org/martinpaljak/cdoc.svg?branch=master)](https://travis-ci.org/martinpaljak/cdoc) [![Coverity status](https://scan.coverity.com/projects/martinpaljak-cdoc/badge.svg?flat=1)](https://scan.coverity.com/projects/martinpaljak-cdoc)  [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.martinpaljak/cdoc/badge.svg)](https://mvnrepository.com/artifact/com.github.martinpaljak/cdoc) [![Javadocs](https://www.javadoc.io/badge/com.github.martinpaljak/cdoc.svg)](https://www.javadoc.io/doc/com.github.martinpaljak/cdoc) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/martinpaljak/cdoc/blob/master/LICENSE)
+# CDOC · [![Build Status](https://travis-ci.org/martinpaljak/cdoc4j.svg?branch=master)](https://travis-ci.org/martinpaljak/cdoc4j) [![Coverity status](https://scan.coverity.com/projects/martinpaljak-cdoc4j/badge.svg?flat=1)](https://scan.coverity.com/projects/martinpaljak-cdoc4j)  [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.martinpaljak/cdoc4j/badge.svg)](https://mvnrepository.com/artifact/com.github.martinpaljak/cdoc4j) [![Javadocs](https://www.javadoc.io/badge/com.github.martinpaljak/cdoc4j.svg)](https://www.javadoc.io/doc/com.github.martinpaljak/cdoc4j) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/martinpaljak/cdoc4j/blob/master/LICENSE)
 
 Small Java library for handling CDOC encryption format, with Elliptic Curve support ("CDOC 1.1 amendment").
 
@@ -6,7 +6,7 @@ Small Java library for handling CDOC encryption format, with Elliptic Curve supp
 ```xml
 <dependency>
     <groupId>com.github.martinpaljak</groupId>
-    <artifactId>cdoc</artifactId>
+    <artifactId>cdoc4j</artifactId>
     <version>0.0.5</version>
 </dependency>
 ```
@@ -14,8 +14,8 @@ Small Java library for handling CDOC encryption format, with Elliptic Curve supp
 
 ## Creating CDOC files
 ```java
-import CDOCBuilder;
-import static CDOC.VERSION.CDOC_V2_0;
+import org.cdoc4j.CDOCBuilder;
+import static org.cdoc4j.CDOC.VERSION.CDOC_V2_0;
 
 // 0. Create the builder
 CDOCBuilder builder = CDOC.builder();
@@ -76,5 +76,5 @@ zip.close();
 
 ### Supported formats:
 - [CDOC 1.0](https://github.com/martinpaljak/idcrypt/wiki/CDOC-1.0): AES-128 CBC, *RSA recipients only*, XML base64 container (supported by [@open-eid](https://github.com/open-eid) software)
-- **[CDOC 1.1](https://github.com/martinpaljak/cdoc/blob/master/docs/CDOC-A-101-7.pdf) (default):** AES-256 GCM, RSA and ECC recipients, XML base64 container (supported _soon_ by [@open-eid](https://github.com/open-eid) software)
+- **[CDOC 1.1](https://github.com/martinpaljak/cdoc4j/blob/master/docs/CDOC-A-101-7.pdf) (default):** AES-256 GCM, RSA and ECC recipients, XML base64 container (supported _soon_ by [@open-eid](https://github.com/open-eid) software)
 - [CDOC 2.0](FORMAT.md): AES-256 GCM, RSA and ECC recipients, ZIP container (_at least_ 30%, usually 50% smaller files compared to XML, not (yet) supported by @open-eid software) 
