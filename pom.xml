@@ -112,7 +112,6 @@
                         <argument>describe</argument>
                         <argument>--tags</argument>
                         <argument>--always</argument>
-                        <argument>--long</argument>
                         <argument>--dirty</argument>
                     </arguments>
                 </configuration>

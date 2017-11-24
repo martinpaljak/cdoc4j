@@ -9,8 +9,8 @@ script: mvn clean compile findbugs:check
 addons:
   coverity_scan:
     project:
-      name: "martinpaljak/cdoc"
-      description: "CDOC library"
+      name: "martinpaljak/cdoc4j"
+      description: "CDOC Java library"
     notification_email: martin@martinpaljak.net
     build_command: mvn clean compile
     branch_pattern: coverity
@@ -18,4 +18,3 @@ addons:
 cache:
   directories:
     - ~/.m2
-
