@@ -24,6 +24,7 @@ package org.cdoc4j;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.crypto.agreement.kdf.ConcatenationKDFGenerator;
 import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.digests.SHA384Digest;
 import org.bouncycastle.crypto.params.KDFParameters;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.ECPointUtil;
@@ -60,7 +61,9 @@ import java.util.Base64;
 import java.util.Collection;
 
 // Construct XML-ENC structure
-public final class XMLENC {
+final class XMLENC {
+    final static String ALGORITHM = "Algorithm";
+
     // Returns elements to be added to the CDOC XML, based on recipient type
     private static Element toRecipient(Document cdoc, String name, X509Certificate cert, SecretKey dek, boolean includecert) throws GeneralSecurityException {
         if (cert.getPublicKey() instanceof ECPublicKey) {
@@ -78,7 +81,7 @@ public final class XMLENC {
 
         // Encryption method for transport key - currently fixed ;(
         Element kekmethod = cdoc.createElement("xenc:EncryptionMethod");
-        kekmethod.setAttribute("Algorithm", "http://www.w3.org/2001/04/xmlenc#rsa-1_5");
+        kekmethod.setAttribute(ALGORITHM, "http://www.w3.org/2001/04/xmlenc#rsa-1_5");
         enckey.appendChild(kekmethod);
 
         if (!includecert) {
@@ -119,17 +122,17 @@ public final class XMLENC {
 
         // Encryption method for transport key - currently fixed ;(
         Element kekmethod = cdoc.createElement("xenc:EncryptionMethod");
-        kekmethod.setAttribute("Algorithm", "http://www.w3.org/2001/04/xmlenc#kw-aes256");
+        kekmethod.setAttribute(ALGORITHM, "http://www.w3.org/2001/04/xmlenc#kw-aes256");
         enckey.appendChild(kekmethod);
 
         // Certificate itself
         Element kinfo = cdoc.createElement("ds:KeyInfo");
         // AgreementMethod
         Element kam = cdoc.createElement("xenc:AgreementMethod");
-        kam.setAttribute("Algorithm", "http://www.w3.org/2009/xmlenc11#ECDH-ES");
+        kam.setAttribute(ALGORITHM, "http://www.w3.org/2009/xmlenc11#ECDH-ES");
         //
         Element kdm = cdoc.createElement("xenc11:KeyDerivationMethod");
-        kdm.setAttribute("Algorithm", "http://www.w3.org/2009/xmlenc11#ConcatKDF");
+        kdm.setAttribute(ALGORITHM, "http://www.w3.org/2009/xmlenc11#ConcatKDF");
         //
 
         // Get the OID
@@ -153,7 +156,7 @@ public final class XMLENC {
         ckdfp.setAttribute("PartyUInfo", Hex.toHexString(uinfo));
         ckdfp.setAttribute("PartyVInfo", Hex.toHexString(vinfo));
         Element dm = cdoc.createElement("ds:DigestMethod");
-        dm.setAttribute("Algorithm", "http://www.w3.org/2001/04/xmlenc#sha256");
+        dm.setAttribute(ALGORITHM, "http://www.w3.org/2001/04/xmlenc#sha256");
         ckdfp.appendChild(dm);
         kdm.appendChild(ckdfp);
         kam.appendChild(kdm);
@@ -194,7 +197,7 @@ public final class XMLENC {
         byte[] shared_secret = key_agreement.generateSecret();
 
         // Derive key wrap key with ckdf
-        ConcatenationKDFGenerator ckdf = new ConcatenationKDFGenerator(new SHA256Digest());
+        ConcatenationKDFGenerator ckdf = new ConcatenationKDFGenerator(new SHA384Digest()); // FIXME: parametrize
         ckdf.init(new KDFParameters(shared_secret, Legacy.concatenate(algid, uinfo, vinfo)));
         byte[] wrapkeybytes = new byte[32];
 
@@ -234,9 +237,9 @@ public final class XMLENC {
         // Data encryption.
         Element encmethod = cdoc.createElement("xenc:EncryptionMethod");
         if (v == CDOC.VERSION.CDOC_V1_0) {
-            encmethod.setAttribute("Algorithm", "http://www.w3.org/2001/04/xmlenc#aes128-cbc");
+            encmethod.setAttribute(ALGORITHM, "http://www.w3.org/2001/04/xmlenc#aes128-cbc");
         } else {
-            encmethod.setAttribute("Algorithm", "http://www.w3.org/2009/xmlenc11#aes256-gcm");
+            encmethod.setAttribute(ALGORITHM, "http://www.w3.org/2009/xmlenc11#aes256-gcm");
         }
         root.appendChild(encmethod);
 
@@ -264,7 +267,7 @@ public final class XMLENC {
                 X509Certificate cert = null;
                 if (algorithm.equals("http://www.w3.org/2001/04/xmlenc#rsa-1_5")) {
                     String certb64 = XML.xPath.evaluate("ds:KeyInfo/ds:X509Data/ds:X509Certificate", n);
-                    if (certb64 != null) {
+                    if (certb64 != null && certb64 != "") {
                         CertificateFactory cf = CertificateFactory.getInstance("X509");
                         cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(Base64.getMimeDecoder().decode(certb64)));
                     }
@@ -285,7 +288,7 @@ public final class XMLENC {
                         throw new IOException("Algorithm not supported: " + kea);
 
                     String certb64 = XML.xPath.evaluate("ds:KeyInfo/xenc:AgreementMethod/xenc:RecipientKeyInfo/ds:X509Data/ds:X509Certificate", n);
-                    if (certb64 != null) {
+                    if (certb64 != null && certb64 != "") {
                         CertificateFactory cf = CertificateFactory.getInstance("X509");
                         cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(Base64.getMimeDecoder().decode(certb64)));
                     }

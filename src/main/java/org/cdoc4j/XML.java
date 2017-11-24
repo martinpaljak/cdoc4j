@@ -154,7 +154,7 @@ public final class XML {
     }
 
     // Schema validator
-    public static final boolean validate(byte[] d, InputStream schema) {
+    public static boolean validate(byte[] d, InputStream schema) {
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);

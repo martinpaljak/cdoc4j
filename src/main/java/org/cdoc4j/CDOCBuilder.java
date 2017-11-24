@@ -45,7 +45,7 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-public class CDOCBuilder {
+public final class CDOCBuilder {
     private final static Logger log = LoggerFactory.getLogger(CDOCBuilder.class);
     private transient SecretKey key;
     private CDOC.VERSION version = CDOC.VERSION.CDOC_V1_1;

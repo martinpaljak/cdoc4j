@@ -52,7 +52,6 @@ public final class CDOC implements AutoCloseable {
     public static final String GCM_CIPHER = "AES/GCM/NoPadding";
     public static final String CBC_CIPHER = "AES/CBC/NoPadding";
 
-
     final static SecureRandom random;
 
     static {

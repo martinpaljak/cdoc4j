@@ -22,7 +22,7 @@
 package org.cdoc4j;
 
 import org.bouncycastle.crypto.agreement.kdf.ConcatenationKDFGenerator;
-import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.digests.SHA384Digest;
 import org.bouncycastle.crypto.params.KDFParameters;
 
 import javax.crypto.Cipher;
@@ -32,8 +32,8 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 
-public class Decrypt {
-    public static final SecretKey getKey(KeyPair kp, Recipient r) throws GeneralSecurityException {
+public final class Decrypt {
+    public static SecretKey getKey(KeyPair kp, Recipient r) throws GeneralSecurityException {
         if (r.getType() == Recipient.TYPE.ECC && kp.getPublic().getAlgorithm().startsWith("EC")) {
             return getKey(kp, (Recipient.ECDHESRecipient) r);
         } else if (r.getType() == Recipient.TYPE.RSA && kp.getPublic().getAlgorithm().equals("RSA")) {
@@ -43,16 +43,19 @@ public class Decrypt {
         }
     }
 
-    public static final SecretKey getKey(KeyPair kp, Recipient.ECDHESRecipient r) throws GeneralSecurityException {
+    public static SecretKey getKey(KeyPair kp, Recipient.ECDHESRecipient r) throws GeneralSecurityException {
         // Derive shared secred
-        KeyAgreement key_agreement = KeyAgreement.getInstance("ECDH");
-        key_agreement.init(kp.getPrivate());
-        key_agreement.doPhase(r.getPublicKey(), true);
-        byte[] sharedSecret = key_agreement.generateSecret();
+        KeyAgreement ka = KeyAgreement.getInstance("ECDH");
+        ka.init(kp.getPrivate());
+        ka.doPhase(r.getPublicKey(), true);
+        return getKey(ka.generateSecret(), r);
+    }
 
-        // Derive key unwrap key with KDF
-        ConcatenationKDFGenerator ckdf = new ConcatenationKDFGenerator(new SHA256Digest());
-        ckdf.init(new KDFParameters(sharedSecret, Legacy.concatenate(r.getAlgorithmID(), r.getPartyUInfo(), r.getPartyVInfo())));
+    // Assumes AES-256
+    public static SecretKey getKey(final byte[] shared_secret, Recipient.ECDHESRecipient r) throws GeneralSecurityException {
+        // Derive unwrap key with KDF
+        ConcatenationKDFGenerator ckdf = new ConcatenationKDFGenerator(new SHA384Digest()); // FIXME: parametrize
+        ckdf.init(new KDFParameters(shared_secret, Legacy.concatenate(r.getAlgorithmID(), r.getPartyUInfo(), r.getPartyVInfo())));
         byte[] wrapkeybytes = new byte[32];
         ckdf.generateBytes(wrapkeybytes, 0, 32);
         SecretKeySpec wrapKey = new SecretKeySpec(wrapkeybytes, "AES");
@@ -60,11 +63,10 @@ public class Decrypt {
         // Unwrap dek
         Cipher cipher = Cipher.getInstance("AESWrap");
         cipher.init(Cipher.UNWRAP_MODE, wrapKey);
-        SecretKey dek = (SecretKey) cipher.unwrap(r.getCryptogram(), "AES", Cipher.SECRET_KEY);
-        return dek;
+        return (SecretKey) cipher.unwrap(r.getCryptogram(), "AES", Cipher.SECRET_KEY);
     }
 
-    public static final SecretKey getKey(KeyPair kp, Recipient.RSARecipient r) throws GeneralSecurityException {
+    public static SecretKey getKey(KeyPair kp, Recipient.RSARecipient r) throws GeneralSecurityException {
         Cipher c = Cipher.getInstance("RSA/ECB/PKCS1Padding");
         c.init(Cipher.DECRYPT_MODE, kp.getPrivate());
         SecretKey dek = new SecretKeySpec(c.doFinal(r.getCryptogram()), "AES");
