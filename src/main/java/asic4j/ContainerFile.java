@@ -168,13 +168,6 @@ public class ContainerFile implements AutoCloseable {
         return true;
     }
 
-    /**
-     * Get a file from the container with the given path.
-     *
-     * @param name path of the file in zip container
-     * @return bytes of the file
-     * @throws IOException
-     */
     public byte[] get(String name) throws IOException {
         ZipEntry ze = zf.getEntry(name);
         if (ze == null)

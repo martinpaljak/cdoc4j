@@ -173,6 +173,7 @@ public class TestFullCycle {
         CDOCBuilder creator = new CDOCBuilder(CDOC.VERSION.CDOC_V2_0);
         creator.addStream(HELLONAME, new ByteArrayInputStream(helloWorld));
         creator.addRecipient(rsacertificate);
+        creator.withValidation(true);
         creator.setOutputStream(mem);
         creator.build();
 
@@ -195,6 +196,7 @@ public class TestFullCycle {
         creator.addRecipient(rsacertificate);
         creator.addRecipient(ecccertificate);
 
+        creator.withValidation(true);
         creator.setOutputStream(mem);
         creator.build();
 
@@ -219,6 +221,8 @@ public class TestFullCycle {
         CDOCBuilder creator = new CDOCBuilder(VERSION.CDOC_V2_0);
         creator.addRecipient(ecccertificate);
         creator.setOutputStream(mem);
+        creator.withPrivacy(true);
+        creator.withValidation(true);
         try (ZipOutputStream zos = creator.buildZipOutputStream()) {
             zos.putNextEntry(new ZipEntry(HELLONAME));
             zos.write(helloWorld);

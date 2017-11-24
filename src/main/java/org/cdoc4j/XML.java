@@ -148,7 +148,7 @@ public final class XML {
     }
 
     public static boolean validate_cdoc(byte[] d) throws IOException {
-        try (InputStream schema = XML.class.getResourceAsStream("xenc-schema.xsd")) {
+        try (InputStream schema = XML.class.getResourceAsStream("xenc-schema-11.xsd")) {
             return validate(d, schema);
         }
     }

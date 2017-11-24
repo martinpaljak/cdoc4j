@@ -1,5 +1,6 @@
+package org.cdoc4j;
+
 import org.apache.commons.io.IOUtils;
-import org.cdoc4j.*;
 import org.esteid.hacker.FakeEstEIDCA;
 import org.junit.*;
 import org.junit.rules.TestName;
@@ -37,13 +38,13 @@ public class TestEncryptDummy {
     public static void resources() throws Exception {
         // Extract resource
         dummy = Files.createTempFile(null, null);
-        IOUtils.copy(TestEncryptDummy.class.getResourceAsStream("CDOC-A-101-7.pdf"), Files.newOutputStream(dummy));
+        IOUtils.copy(TestEncryptDummy.class.getResourceAsStream("/CDOC-A-101-7.pdf"), Files.newOutputStream(dummy));
         System.out.println("Input file sizes: " + (Files.size(dummy)));
 
         // Parse certificates
         CertificateFactory cf = CertificateFactory.getInstance("X509");
-        ecc = (X509Certificate) cf.generateCertificate(TestEncryptDummy.class.getResourceAsStream("sk-auth-ecc.pem"));
-        rsa = (X509Certificate) cf.generateCertificate(TestEncryptDummy.class.getResourceAsStream("sk-auth.pem"));
+        ecc = (X509Certificate) cf.generateCertificate(TestEncryptDummy.class.getResourceAsStream("/sk-auth-ecc.pem"));
+        rsa = (X509Certificate) cf.generateCertificate(TestEncryptDummy.class.getResourceAsStream("/sk-auth.pem"));
     }
 
     @Before
