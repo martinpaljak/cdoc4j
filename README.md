@@ -1,15 +1,17 @@
-# CDOC · [![Build Status](https://travis-ci.org/martinpaljak/cdoc4j.svg?branch=master)](https://travis-ci.org/martinpaljak/cdoc4j) [![Coverity status](https://scan.coverity.com/projects/martinpaljak-cdoc4j/badge.svg?flat=1)](https://scan.coverity.com/projects/martinpaljak-cdoc4j)  [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.martinpaljak/cdoc4j/badge.svg)](https://mvnrepository.com/artifact/com.github.martinpaljak/cdoc4j) [![Javadocs](https://www.javadoc.io/badge/com.github.martinpaljak/cdoc4j.svg)](https://www.javadoc.io/doc/com.github.martinpaljak/cdoc4j) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/martinpaljak/cdoc4j/blob/master/LICENSE)
+# cdoc4j · [![Build Status](https://travis-ci.org/martinpaljak/cdoc4j.svg?branch=master)](https://travis-ci.org/martinpaljak/cdoc4j) [![Coverity status](https://scan.coverity.com/projects/martinpaljak-cdoc4j/badge.svg?flat=1)](https://scan.coverity.com/projects/martinpaljak-cdoc4j)  [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.martinpaljak/cdoc4j/badge.svg)](https://mvnrepository.com/artifact/com.github.martinpaljak/cdoc4j) [![Javadocs](https://www.javadoc.io/badge/com.github.martinpaljak/cdoc4j.svg)](https://www.javadoc.io/doc/com.github.martinpaljak/cdoc4j) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/martinpaljak/cdoc4j/blob/master/LICENSE)
 
 Small Java library for handling CDOC encryption format, with Elliptic Curve support ("CDOC 1.1 amendment").
 
-For command line access, use the [cdoc](https://github.com/martinpaljak/cdoc) utility.
+For working with CDOC files from the command line, use the [cdoc utility](https://github.com/martinpaljak/cdoc).
+
+----
 
 - Include dependency
 ```xml
 <dependency>
     <groupId>com.github.martinpaljak</groupId>
     <artifactId>cdoc4j</artifactId>
-    <version>0.0.5</version>
+    <version>0.0.8</version>
 </dependency>
 ```
 - Get coding!
