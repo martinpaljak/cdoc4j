@@ -23,16 +23,16 @@ Information about transport keys, recipients etc is stored in `META-INF/recipien
 
 This arrangement is comparable to ASiC-S ODF containers.
 
-## CDOC 2.0 noteworthy changes from CDOC 1.1
+### CDOC 2.0 noteworthy changes from CDOC 1.1
 * **Usage of ODF ZIP container instead of XML as the overall envelope**
 * **Encapsulation of multiple files is resource-efficient ZIP instead of XML+Base64**
 * XML actually validates against XML-ENC schema
 
-## CDOC 1.1 noteworthy changes from CDOC 1.0
+### CDOC 1.1 noteworthy changes from CDOC 1.0
 * Introduction of AES-256 GCM as the default data encipherement algorithm instead of AES-128 CBC
 * Addition of ECC support for recipient key info in addition to RSA, with elements from XML-ENC1, as described in [XML-ENC1 5.6.4](https://www.w3.org/2008/xmlsec/Drafts/xmlenc-core-11/#sec-ECDH-ES)
 
-## Issues of CDOC 1.0
+### Issues of CDOC 1.0
 * Described in https://github.com/martinpaljak/cdoc/wiki/CDOC-1.0
 
 ## Container layout
