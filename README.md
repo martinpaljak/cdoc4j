@@ -4,6 +4,11 @@ Small Java library for handling CDOC encryption format, with Elliptic Curve supp
 
 For working with CDOC files from the command line, use the [cdoc utility](https://github.com/martinpaljak/cdoc).
 
+### Supported formats
+- [CDOC 1.0](https://github.com/martinpaljak/cdoc/wiki/CDOC-1.0): AES-128 CBC, *RSA recipients only*, XML base64 container (supported by [@open-eid](https://github.com/open-eid) software)
+- **[CDOC 1.1](https://github.com/martinpaljak/cdoc4j/blob/master/docs/CDOC-A-101-7.pdf) (default):** AES-256 GCM, RSA and ECC recipients, XML base64 container (supported _soon_ by [@open-eid](https://github.com/open-eid) software)
+- [CDOC 2.0](FORMAT.md): AES-256 GCM, RSA and ECC recipients, ZIP container (_at least_ 30%, usually 50% smaller files compared to XML, not (yet) supported by @open-eid software)
+
 ----
 
 - Include dependency
@@ -14,6 +19,7 @@ For working with CDOC files from the command line, use the [cdoc utility](https:
     <version>0.0.8</version>
 </dependency>
 ```
+- **When using Oracle Java, make sure you have ["Unlimited Strength Jurisdiction Policy Files"](https://github.com/martinpaljak/cdoc/wiki/UnlimitedCrypto) installed!**
 - Get coding!
 
 ## Creating CDOC files
@@ -78,7 +84,11 @@ zip.closeEntry();
 zip.close();
 ```
 
-### Supported formats:
-- [CDOC 1.0](https://github.com/martinpaljak/cdoc/wiki/CDOC-1.0): AES-128 CBC, *RSA recipients only*, XML base64 container (supported by [@open-eid](https://github.com/open-eid) software)
-- **[CDOC 1.1](https://github.com/martinpaljak/cdoc4j/blob/master/docs/CDOC-A-101-7.pdf) (default):** AES-256 GCM, RSA and ECC recipients, XML base64 container (supported _soon_ by [@open-eid](https://github.com/open-eid) software)
-- [CDOC 2.0](FORMAT.md): AES-256 GCM, RSA and ECC recipients, ZIP container (_at least_ 30%, usually 50% smaller files compared to XML, not (yet) supported by @open-eid software) 
+## Notes and caveats
+* CDOC 1.X uses XML and in-memory processing of Base64 data, which requires a lot of memory. Thus it is advisable to only encrypt small files (in the range of 1M..100M, not 100M..1G) into v1.X formats and to make sure that enough memory is available to the JVM (`-Xmx8g`)
+
+## Dependencies
+- [BouncyCastle](https://www.bouncycastle.org) (MIT)
+- [Apache Commons IO](https://commons.apache.org/io/) (Apache)
+- [slf4j](https://www.slf4j.org/) (MIT)
+
