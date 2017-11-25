@@ -1,5 +1,5 @@
 # CDOC 2.0 specification
-> DRAFT v0.5 17-11-2017, martin.paljak@eesti.ee
+> DRAFT v0.6 24-11-2017, martin.paljak@eesti.ee
 
 ## Introduction
 CDOC is a file format for storing encrypted data together with data for/about intended recipients.
