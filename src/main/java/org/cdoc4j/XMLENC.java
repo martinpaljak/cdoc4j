@@ -23,7 +23,6 @@ package org.cdoc4j;
 
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.crypto.agreement.kdf.ConcatenationKDFGenerator;
-import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA384Digest;
 import org.bouncycastle.crypto.params.KDFParameters;
 import org.bouncycastle.jce.ECNamedCurveTable;
@@ -237,9 +236,9 @@ final class XMLENC {
         // Data encryption.
         Element encmethod = cdoc.createElement("xenc:EncryptionMethod");
         if (v == CDOC.VERSION.CDOC_V1_0) {
-            encmethod.setAttribute(ALGORITHM, "http://www.w3.org/2001/04/xmlenc#aes128-cbc");
+            encmethod.setAttribute(ALGORITHM, EncryptionMethod.AES128_CBC.getAlgorithmURI());
         } else {
-            encmethod.setAttribute(ALGORITHM, "http://www.w3.org/2009/xmlenc11#aes256-gcm");
+            encmethod.setAttribute(ALGORITHM, EncryptionMethod.AES256_GCM.getAlgorithmURI());
         }
         root.appendChild(encmethod);
 

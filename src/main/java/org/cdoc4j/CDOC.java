@@ -49,8 +49,6 @@ public final class CDOC implements AutoCloseable {
     public static final String MIMETYPE = "application/x-cdoc+zip";
     public static final String RECIPIENTS_XML = "META-INF/recipients.xml";
     public static final String PAYLOAD_ZIP = "payload.zip";
-    public static final String GCM_CIPHER = "AES/GCM/NoPadding";
-    public static final String CBC_CIPHER = "AES/CBC/NoPadding";
 
     final static SecureRandom random;
 
@@ -74,7 +72,7 @@ public final class CDOC implements AutoCloseable {
     private ArrayList<Recipient> recipients;
     private VERSION version;
     private transient Map<String, byte[]> files = null;
-    private String algorithm;
+    private EncryptionMethod algorithm;
 
     private CDOC(Document d, VERSION v, Collection<Recipient> recipients) {
         this.xml = d;
@@ -136,7 +134,7 @@ public final class CDOC implements AutoCloseable {
         final VERSION v;
         try {
             String algorithm = XML.xPath.evaluate("/xenc:EncryptedData/xenc:EncryptionMethod/@Algorithm", d);
-            if (algorithm.equals("http://www.w3.org/2009/xmlenc11#aes256-gcm")) {
+            if (algorithm.equals(EncryptionMethod.AES256_GCM.getAlgorithmURI())) {
                 v = VERSION.CDOC_V1_1;
             } else {
                 v = VERSION.CDOC_V1_0;
@@ -184,10 +182,10 @@ public final class CDOC implements AutoCloseable {
         return Collections.unmodifiableList(recipients);
     }
 
-    public String getAlgorithm() {
+    public EncryptionMethod getAlgorithm() {
         if (algorithm == null) {
             try {
-                algorithm = XML.xPath.evaluate("/xenc:EncryptedData/xenc:EncryptionMethod/@Algorithm", xml);
+                algorithm = EncryptionMethod.fromURI(XML.xPath.evaluate("/xenc:EncryptedData/xenc:EncryptionMethod/@Algorithm", xml));
             } catch (XPathExpressionException e) {
                 log.error("EncryptionMethod/@Algorithm not found: {} ", e.getMessage());
             }
@@ -206,7 +204,7 @@ public final class CDOC implements AutoCloseable {
                     throw new IOException(PAYLOAD_ZIP + " not found!");
                 return zf.getInputStream(payload);
             } else {
-                // XXX: This assumes the proper ordering of the container
+                // XXX: This assumes the "proper" ordering of the container
                 for (; currentEntry != null; currentEntry = zis.getNextEntry()) {
                     if (currentEntry.isDirectory())
                         continue;
@@ -246,7 +244,7 @@ public final class CDOC implements AutoCloseable {
                 byte[] iv = new byte[16];
                 if (in.read(iv, 0, iv.length) != iv.length)
                     throw new IOException("Not enought bytes to read IV");
-                Cipher cipher = Cipher.getInstance(CBC_CIPHER);
+                Cipher cipher = Cipher.getInstance(getAlgorithm().getCipherName());
                 cipher.init(Cipher.DECRYPT_MODE, dek, new IvParameterSpec(iv));
                 ByteArrayOutputStream plaintext = new ByteArrayOutputStream();
                 try (javax.crypto.CipherOutputStream cout = new javax.crypto.CipherOutputStream(plaintext, cipher)) {
@@ -260,7 +258,7 @@ public final class CDOC implements AutoCloseable {
                     throw new IOException("Not enought bytes to read IV");
                 log.trace("IV: {}", Hex.toHexString(iv));
 
-                Cipher cipher = Cipher.getInstance(GCM_CIPHER);
+                Cipher cipher = Cipher.getInstance(getAlgorithm().getCipherName());
                 cipher.init(Cipher.DECRYPT_MODE, dek, new GCMParameterSpec(128, iv));
 
                 // Decrypt to memory
@@ -284,7 +282,7 @@ public final class CDOC implements AutoCloseable {
             if (payload.read(iv, 0, iv.length) != iv.length)
                 throw new IOException("Not enought bytes to read IV");
             log.trace("IV: {}", Hex.toHexString(iv));
-            Cipher cipher = Cipher.getInstance(GCM_CIPHER);
+            Cipher cipher = Cipher.getInstance(getAlgorithm().getCipherName());
             cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(128, iv));
 
             // Decrypt to memory
