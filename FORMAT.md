@@ -23,14 +23,17 @@ Information about transport keys, recipients etc is stored in `META-INF/recipien
 
 This arrangement is comparable to ASiC-S ODF containers.
 
+## Changes
+**Bold** is noteworthy, _italic_ is minor/obvious.
+
 ### CDOC 2.0 noteworthy changes from CDOC 1.1
 * **Usage of ODF ZIP container instead of XML as the overall envelope**
 * **Encapsulation of multiple files is resource-efficient ZIP instead of XML+Base64**
-* XML actually validates against XML-ENC schema
+* _XML actually validates against XML-ENC schema_
 
 ### CDOC 1.1 noteworthy changes from CDOC 1.0
-* Introduction of AES-256 GCM as the default data encipherement algorithm instead of AES-128 CBC
-* Addition of ECC support for recipient key info in addition to RSA, with elements from XML-ENC1, as described in [XML-ENC1 5.6.4](https://www.w3.org/2008/xmlsec/Drafts/xmlenc-core-11/#sec-ECDH-ES)
+* _Introduction of AES-256 GCM as the default data encipherement algorithm instead of AES-128 CBC_
+* _Addition of ECC support for recipient key info in addition to RSA, as described in [XML-ENC1 5.6.4](https://www.w3.org/2008/xmlsec/Drafts/xmlenc-core-11/#sec-ECDH-ES)_
 
 ### Issues of CDOC 1.0
 * Described in https://github.com/martinpaljak/cdoc/wiki/CDOC-1.0
@@ -96,8 +99,8 @@ Where:
   * Implementations SHOULD allow to decrypt containers which lack proper MIME information, based only on the presence of `META-INF/recipients.xml`
 * Implementations SHOULD support ZIP64 for files larger than 4GB
   * Lack of support for ZIP64 MUST be documented in accompanying documentation
-* Formatting of encrypted files (IV, padding, authentication tags etc) MUST conform to [XML-ENC1] 5.2: Block Encryption Algorithms.
-* Implementations MUST support AES-256 GCM transport key encryption with RSA PKCS#1 v1.5 and ECDH-ES with AES KeyWrap (usage with ID-card). Implementations MAY support additional schemes (like out-of-band transport keys or other transport ciphes)
+* Binary formatting of encrypted payload (IV, padding, authentication tag) MUST conform to [XML-ENC1] 5.2: Block Encryption Algorithms.
+* Implementations MUST support AES-256 GCM transport key encryption with RSA PKCS#1 v1.5 and ECDH-ES with AES KeyWrap (usage with ID-card). Implementations MAY support additional schemes (like out-of-band transport keys or other transport ciphes).
 
 ## ID-card profile
 The use with Estonian ID-card defaults to:
