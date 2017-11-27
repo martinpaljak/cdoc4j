@@ -42,7 +42,7 @@
         <dependency>
             <groupId>com.github.martinpaljak</groupId>
             <artifactId>esteid</artifactId>
-            <version>17.11.14</version>
+            <version>17.11.26</version>
             <scope>test</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->

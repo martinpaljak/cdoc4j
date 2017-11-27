@@ -37,7 +37,6 @@ import javax.xml.xpath.XPathExpressionException;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.util.*;
@@ -51,18 +50,15 @@ public final class CDOC implements AutoCloseable {
     public static final String PAYLOAD_ZIP = "payload.zip";
 
     final static SecureRandom random;
+    private final static Logger log = LoggerFactory.getLogger(CDOC.class);
 
     static {
-        try {
-            // See DMI_RANDOM_USED_ONLY_ONCE for reasoning
-            random = SecureRandom.getInstanceStrong();
-            random.nextBytes(new byte[2]); // seed and discard first 16 bits
-        } catch (NoSuchAlgorithmException e) {
-            throw new Error("Need to have SecureRandom for encryption!");
-        }
+        // See DMI_RANDOM_USED_ONLY_ONCE for reasoning
+        random = new SecureRandom();
+        random.nextBytes(new byte[2]); // seed if needed and discard first 16 bits
+        log.info("Using {} from {} for random (IV, keys)", random.getAlgorithm(), random.getProvider());
     }
 
-    private final Logger log = LoggerFactory.getLogger(CDOC.class);
     public CountingInputStream counter;
     private Document xml;
     private transient SecretKey key;
@@ -70,15 +66,15 @@ public final class CDOC implements AutoCloseable {
     private ZipInputStream zis;
     private ZipEntry currentEntry;
     private ArrayList<Recipient> recipients;
-    private VERSION version;
+    private Version version;
     private transient Map<String, byte[]> files = null;
     private EncryptionMethod algorithm;
 
-    private CDOC(Document d, VERSION v, Collection<Recipient> recipients) {
+    private CDOC(Document d, Version v, Collection<Recipient> recipients) {
         this.xml = d;
         this.recipients = new ArrayList<>(recipients);
         this.version = v;
-        log.debug("Loaded CDOC with {} recipients", recipients.size());
+        log.trace("Loaded CDOC with {} recipients", recipients.size());
     }
 
     public static String getLibraryVersion() {
@@ -116,7 +112,7 @@ public final class CDOC implements AutoCloseable {
                 try (InputStream rin = zf.getInputStream(recipientsXML)) {
                     Document d = XML.stream2dom(rin);
                     Collection<Recipient> recipients = XMLENC.parseRecipientsXML(d);
-                    CDOC c = new CDOC(d, VERSION.CDOC_V2_0, recipients);
+                    CDOC c = new CDOC(d, Version.CDOC_V2_0, recipients);
                     c.zf = zf;
                     return c;
                 } catch (IOException e) {
@@ -131,13 +127,13 @@ public final class CDOC implements AutoCloseable {
 
     private static CDOC fromXMLStream(InputStream in) throws IOException, CertificateException {
         Document d = XML.stream2dom(in);
-        final VERSION v;
+        final Version v;
         try {
             String algorithm = XML.xPath.evaluate("/xenc:EncryptedData/xenc:EncryptionMethod/@Algorithm", d);
             if (algorithm.equals(EncryptionMethod.AES256_GCM.getAlgorithmURI())) {
-                v = VERSION.CDOC_V1_1;
+                v = Version.CDOC_V1_1;
             } else {
-                v = VERSION.CDOC_V1_0;
+                v = Version.CDOC_V1_0;
             }
         } catch (XPathExpressionException e) {
             throw new IOException("EncryptionMethod/@Algorithm not found", e);
@@ -155,7 +151,7 @@ public final class CDOC implements AutoCloseable {
             if (entry.getName().equals(RECIPIENTS_XML)) {
                 Document d = XML.stream2dom(zis);
                 ArrayList<Recipient> recipients = XMLENC.parseRecipientsXML(d);
-                CDOC c = new CDOC(d, VERSION.CDOC_V2_0, recipients);
+                CDOC c = new CDOC(d, Version.CDOC_V2_0, recipients);
                 c.zis = zis;
                 c.currentEntry = entry;
                 return c;
@@ -195,9 +191,9 @@ public final class CDOC implements AutoCloseable {
 
     // Gets encrypted payload stream
     private InputStream getPayloadStream() throws IOException {
-        if (version == VERSION.CDOC_V1_1 || version == VERSION.CDOC_V1_0) {
+        if (version == Version.CDOC_V1_1 || version == Version.CDOC_V1_0) {
             return new ByteArrayInputStream(getPayloadBytes());
-        } else if (version == VERSION.CDOC_V2_0) {
+        } else if (version == Version.CDOC_V2_0) {
             if (zf != null) {
                 ZipEntry payload = zf.getEntry(PAYLOAD_ZIP);
                 if (payload == null)
@@ -221,14 +217,14 @@ public final class CDOC implements AutoCloseable {
 
     private byte[] getPayloadBytes() throws IOException {
         final byte[] result;
-        if (version == VERSION.CDOC_V1_1 || version == VERSION.CDOC_V1_0) {
+        if (version == Version.CDOC_V1_1 || version == Version.CDOC_V1_0) {
             try {
                 String s = XML.xPath.evaluate("/xenc:EncryptedData/xenc:CipherData/xenc:CipherValue", xml);
                 result = Base64.getMimeDecoder().decode(s);
             } catch (XPathException e) {
                 throw new IOException("Could not extract payload", e);
             }
-        } else if (version == VERSION.CDOC_V2_0) {
+        } else if (version == Version.CDOC_V2_0) {
             result = IOUtils.toByteArray(getPayloadStream());
         } else {
             throw new IllegalStateException("Unknown version: " + version);
@@ -240,7 +236,7 @@ public final class CDOC implements AutoCloseable {
     // Decrypt payload to stream
     public void decrypt(SecretKey dek, OutputStream to) throws IOException, GeneralSecurityException {
         try (InputStream in = getPayloadStream()) {
-            if (version == VERSION.CDOC_V1_0) {
+            if (version == Version.CDOC_V1_0) {
                 byte[] iv = new byte[16];
                 if (in.read(iv, 0, iv.length) != iv.length)
                     throw new IOException("Not enought bytes to read IV");
@@ -272,7 +268,7 @@ public final class CDOC implements AutoCloseable {
     }
 
     public ZipInputStream getZipInputStream(SecretKey key) throws IOException, GeneralSecurityException {
-        if (version != VERSION.CDOC_V2_0)
+        if (version != Version.CDOC_V2_0)
             throw new IllegalStateException("ZIP input stream is only available for CDOC 2.0");
 
         try (InputStream payload = getPayloadStream()) {
@@ -296,11 +292,11 @@ public final class CDOC implements AutoCloseable {
 
     public Map<String, byte[]> getFiles(SecretKey dek) throws IOException, GeneralSecurityException {
         if (files == null) {
-            if (version == VERSION.CDOC_V1_0 || version == VERSION.CDOC_V1_1) {
+            if (version == Version.CDOC_V1_0 || version == Version.CDOC_V1_1) {
                 ByteArrayOutputStream plaintext = new ByteArrayOutputStream();
                 decrypt(dek, plaintext);
                 files = Legacy.extractPayload(plaintext.toByteArray());
-            } else if (version == VERSION.CDOC_V2_0) {
+            } else if (version == Version.CDOC_V2_0) {
                 try (ZipInputStream zin = getZipInputStream(dek)) {
                     ZipEntry e;
                     files = new HashMap<>();
@@ -315,7 +311,7 @@ public final class CDOC implements AutoCloseable {
         return files;
     }
 
-    public VERSION getVersion() {
+    public Version getVersion() {
         return version;
     }
 
@@ -327,7 +323,18 @@ public final class CDOC implements AutoCloseable {
             zis.close();
     }
 
-    public enum VERSION {
-        CDOC_V1_0, CDOC_V1_1, CDOC_V2_0
+    public enum Version {
+        CDOC_V1_0("CDOC-1.0"), CDOC_V1_1("CDOC-1.1"), CDOC_V2_0("CDOC-2.0");
+
+        private final String name;
+
+        Version(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return this.name;
+        }
     }
 }

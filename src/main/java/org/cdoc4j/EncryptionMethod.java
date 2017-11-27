@@ -15,7 +15,16 @@ public enum EncryptionMethod {
         this.cipher = cipher;
     }
 
-    public String getAlgorithmName() {
+    public static EncryptionMethod fromURI(String uri) {
+        for (EncryptionMethod e : values()) {
+            if (e.uri.equals(uri))
+                return e;
+        }
+        return null;
+    }
+
+    @Override
+    public String toString() {
         return name;
     }
 
@@ -25,13 +34,5 @@ public enum EncryptionMethod {
 
     public String getCipherName() {
         return cipher;
-    }
-
-    public static EncryptionMethod fromURI(String uri) {
-        for (EncryptionMethod e : values()) {
-            if (e.uri.equals(uri))
-                return e;
-        }
-        return null;
     }
 }

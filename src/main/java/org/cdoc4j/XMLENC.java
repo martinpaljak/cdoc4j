@@ -218,7 +218,7 @@ final class XMLENC {
         return enckey;
     }
 
-    static Document makeRecipientsXML(CDOC.VERSION v, Collection<X509Certificate> recipients, SecretKey dek, boolean privacy) throws GeneralSecurityException {
+    static Document makeRecipientsXML(CDOC.Version v, Collection<X509Certificate> recipients, SecretKey dek, boolean privacy) throws GeneralSecurityException {
         // Construct recipients.xml.
         Document cdoc = XML.getDocument();
 
@@ -229,13 +229,13 @@ final class XMLENC {
         root.setAttribute("xmlns:dsig11", "http://www.w3.org/2009/xmldsig11#");
 
         cdoc.appendChild(root);
-        if (v == CDOC.VERSION.CDOC_V1_0 || v == CDOC.VERSION.CDOC_V1_1) {
+        if (v == CDOC.Version.CDOC_V1_0 || v == CDOC.Version.CDOC_V1_1) {
             root.setAttribute("MimeType", "http://www.sk.ee/DigiDoc/v1.3.0/digidoc.xsd");
         }
 
         // Data encryption.
         Element encmethod = cdoc.createElement("xenc:EncryptionMethod");
-        if (v == CDOC.VERSION.CDOC_V1_0) {
+        if (v == CDOC.Version.CDOC_V1_0) {
             encmethod.setAttribute(ALGORITHM, EncryptionMethod.AES128_CBC.getAlgorithmURI());
         } else {
             encmethod.setAttribute(ALGORITHM, EncryptionMethod.AES256_GCM.getAlgorithmURI());

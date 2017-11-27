@@ -47,8 +47,10 @@ import java.util.zip.ZipOutputStream;
 
 public final class CDOCBuilder {
     private final static Logger log = LoggerFactory.getLogger(CDOCBuilder.class);
+    private static final int GCM_IV_LEN = 12;
+    private static final int GCM_TAG_LEN = 128;
     private transient SecretKey key;
-    private CDOC.VERSION version = CDOC.VERSION.CDOC_V1_1;
+    private CDOC.Version version = CDOC.Version.CDOC_V1_1;
     private boolean privacy = false;
     private OutputStream out = null;
     private ArrayList<X509Certificate> recipients = new ArrayList<>();
@@ -57,7 +59,8 @@ public final class CDOCBuilder {
     private HashMap<String, InputStream> streams = new HashMap<>();
     private boolean validate = false;
 
-    public CDOCBuilder(CDOC.VERSION v) {
+
+    public CDOCBuilder(CDOC.Version v) {
         this.version = v;
     }
 
@@ -65,11 +68,11 @@ public final class CDOCBuilder {
     }
 
     private static void encrypt_gcm(InputStream in, SecretKey key, byte[] iv, OutputStream out) throws IOException, GeneralSecurityException {
-        if (iv.length != 12)
+        if (iv.length != GCM_IV_LEN)
             throw new IllegalArgumentException("IV must be 12 bytes (96 bits)");
 
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-        GCMParameterSpec params = new GCMParameterSpec(128, iv);
+        Cipher cipher = Cipher.getInstance(EncryptionMethod.AES256_GCM.getCipherName());
+        GCMParameterSpec params = new GCMParameterSpec(GCM_TAG_LEN, iv);
         cipher.init(Cipher.ENCRYPT_MODE, key, params);
         out.write(iv);
         out.write(cipher.doFinal(IOUtils.toByteArray(in)));
@@ -86,7 +89,7 @@ public final class CDOCBuilder {
         return this;
     }
 
-    public CDOCBuilder setVersion(CDOC.VERSION v) {
+    public CDOCBuilder setVersion(CDOC.Version v) {
         this.version = v;
         return this;
     }
@@ -107,7 +110,7 @@ public final class CDOCBuilder {
     }
 
     public CDOCBuilder addRecipient(X509Certificate c) {
-        if (version == CDOC.VERSION.CDOC_V1_0 && !c.getPublicKey().getAlgorithm().equals("RSA")) {
+        if (version == CDOC.Version.CDOC_V1_0 && !c.getPublicKey().getAlgorithm().equals("RSA")) {
             throw new IllegalArgumentException("Can do CDOC v1.0 only with RSA keys");
         }
         recipients.add(c);
@@ -134,7 +137,7 @@ public final class CDOCBuilder {
         // generate DEK if not explicitly given
         if (key == null) {
             final byte[] keybytes;
-            if (version == CDOC.VERSION.CDOC_V1_0)
+            if (version == CDOC.Version.CDOC_V1_0)
                 keybytes = new byte[16];
             else
                 keybytes = new byte[32];
@@ -143,7 +146,7 @@ public final class CDOCBuilder {
         }
 
         // Check key
-        if (version == CDOC.VERSION.CDOC_V1_0) {
+        if (version == CDOC.Version.CDOC_V1_0) {
             if (key.getEncoded().length != 16) {
                 throw new IllegalArgumentException("Key must be 16 bytes for AES-128");
             }
@@ -185,7 +188,7 @@ public final class CDOCBuilder {
             }
 
 
-            if (version == CDOC.VERSION.CDOC_V1_0 || version == CDOC.VERSION.CDOC_V1_1) {
+            if (version == CDOC.Version.CDOC_V1_0 || version == CDOC.Version.CDOC_V1_1) {
                 // Generate recipients xml for recipients
                 // Construct the overall document.
                 Document recipientsXML = XMLENC.makeRecipientsXML(version, recipients, key, privacy);
@@ -195,7 +198,7 @@ public final class CDOCBuilder {
                 ByteArrayInputStream pin = new ByteArrayInputStream(data);
                 ByteArrayOutputStream cout = new ByteArrayOutputStream();
                 // Encrypt payload
-                if (version == CDOC.VERSION.CDOC_V1_0) {
+                if (version == CDOC.Version.CDOC_V1_0) {
                     byte[] iv = new byte[16];
                     CDOC.random.nextBytes(iv);
                     Legacy.encrypt_cbc(pin, key, iv, cout);
@@ -252,7 +255,7 @@ public final class CDOCBuilder {
     // FIXME this is all backed by arrays at the moment.
     // For streams to work properly with GCM, must re-implement Cipher*Stream and possibly Zip*stream
     public ZipOutputStream buildZipOutputStream() throws IOException, GeneralSecurityException {
-        if (version != CDOC.VERSION.CDOC_V2_0)
+        if (version != CDOC.Version.CDOC_V2_0)
             throw new IllegalStateException("ZIP output stream is only available for CDOC 2.0");
         if (out == null || recipients.size() == 0) {
             throw new IllegalStateException("Need to have output stream and recipients!");
@@ -266,21 +269,19 @@ public final class CDOCBuilder {
         // Add payload reference to recipients.xml
         Element cipherdata = recipientsXML.createElement("xenc:CipherData");
         Element payload_ref = recipientsXML.createElement("xenc:CipherReference");
-        payload_ref.setAttribute("URI", "payload.zip");
+        payload_ref.setAttribute("URI", CDOC.PAYLOAD_ZIP);
         cipherdata.appendChild(payload_ref);
         recipientsXML.getDocumentElement().appendChild(cipherdata);
 
         byte[] rcpts = XML.dom2bytes(recipientsXML);
-        if (validate) {
-            if (!XML.validate_cdoc(rcpts)) {
-                throw new IllegalStateException("Generated recipients.xml did not validate!");
-            }
+        if (validate && !XML.validate_cdoc(rcpts)) {
+            throw new IllegalStateException("Generated recipients.xml did not validate!");
         }
 
         // Write container header + manifest
         Container asic = new Container(CDOC.MIMETYPE, out, privacy);
-        asic.put_meta("META-INF/recipients.xml", rcpts);
-        asic.declare("payload.zip", "application/zip", -1);
+        asic.put_meta(CDOC.RECIPIENTS_XML, rcpts);
+        asic.declare(CDOC.PAYLOAD_ZIP, "application/zip", -1);
         asic.writeHeader();
         asic.writeMetas();
 
@@ -288,12 +289,12 @@ public final class CDOCBuilder {
         ZipOutputStream container = asic.getZipOutputStream();
 
         // Generate random IV
-        byte[] iv = new byte[12];
+        byte[] iv = new byte[GCM_IV_LEN];
         CDOC.random.nextBytes(iv);
         log.trace("IV: {}", Hex.toHexString(iv));
 
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-        cipher.init(Cipher.ENCRYPT_MODE, key, new GCMParameterSpec(128, iv));
+        Cipher cipher = Cipher.getInstance(EncryptionMethod.AES256_GCM.getCipherName());
+        cipher.init(Cipher.ENCRYPT_MODE, key, new GCMParameterSpec(GCM_TAG_LEN, iv));
         return new CDOCZipOutputStream(container, new ByteArrayOutputStream(), cipher, asic.getManifest(), privacy);
     }
 }

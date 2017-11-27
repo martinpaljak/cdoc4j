@@ -64,7 +64,7 @@ public class TestEncryptDummy {
 
     @Test
     public void testEncryptionV11ECC() throws Exception {
-        CDOCBuilder creator = new CDOCBuilder(CDOC.VERSION.CDOC_V1_1);
+        CDOCBuilder creator = new CDOCBuilder(CDOC.Version.CDOC_V1_1);
         creator.addPath(dummy);
         creator.addRecipient(ecc);
         creator.setOutputStream(Files.newOutputStream(tmp));
@@ -73,7 +73,7 @@ public class TestEncryptDummy {
 
     @Test
     public void testEncryptionV10RSA() throws Exception {
-        CDOCBuilder creator = new CDOCBuilder(CDOC.VERSION.CDOC_V1_0);
+        CDOCBuilder creator = new CDOCBuilder(CDOC.Version.CDOC_V1_0);
         creator.addPath(dummy);
         creator.addRecipient(rsa);
         creator.setOutputStream(Files.newOutputStream(tmp));
@@ -84,7 +84,7 @@ public class TestEncryptDummy {
 
     @Test
     public void testEncryptionV10RSA2Files() throws Exception {
-        CDOCBuilder creator = new CDOCBuilder(CDOC.VERSION.CDOC_V1_0);
+        CDOCBuilder creator = new CDOCBuilder(CDOC.Version.CDOC_V1_0);
         creator.addPath(dummy);
         creator.addStream("test.txt", new ByteArrayInputStream("Hello, World!".getBytes(StandardCharsets.US_ASCII)));
         creator.addRecipient(rsa);
@@ -96,7 +96,7 @@ public class TestEncryptDummy {
 
     @Test
     public void testEncryptionV20ECC() throws Exception {
-        CDOCBuilder creator = new CDOCBuilder(CDOC.VERSION.CDOC_V2_0);
+        CDOCBuilder creator = new CDOCBuilder(CDOC.Version.CDOC_V2_0);
         creator.addPath(dummy);
         creator.addRecipient(ecc);
         creator.withValidation(true);
@@ -106,7 +106,7 @@ public class TestEncryptDummy {
 
     @Test
     public void testEncryptionV20RSA() throws Exception {
-        CDOCBuilder creator = new CDOCBuilder(CDOC.VERSION.CDOC_V2_0);
+        CDOCBuilder creator = new CDOCBuilder(CDOC.Version.CDOC_V2_0);
         creator.addPath(dummy);
         creator.addRecipient(rsa);
         creator.withValidation(true);
@@ -116,7 +116,7 @@ public class TestEncryptDummy {
 
     @Test(expected = IllegalArgumentException.class)
     public void testEncryptionV10ECC() throws Exception {
-        CDOCBuilder creator = new CDOCBuilder(CDOC.VERSION.CDOC_V1_0);
+        CDOCBuilder creator = new CDOCBuilder(CDOC.Version.CDOC_V1_0);
         creator.addPath(dummy);
         creator.addRecipient(ecc);
         creator.setOutputStream(Files.newOutputStream(tmp));
@@ -146,7 +146,7 @@ public class TestEncryptDummy {
         System.out.println("Generated " + c.getSubjectDN());
         // Create
         ByteArrayOutputStream mem = new ByteArrayOutputStream();
-        CDOCBuilder creator = new CDOCBuilder(CDOC.VERSION.CDOC_V1_1);
+        CDOCBuilder creator = new CDOCBuilder(CDOC.Version.CDOC_V1_1);
         //creator.addPath(dummy);
         creator.addStream("test.txt", new ByteArrayInputStream(helloWorld));
 

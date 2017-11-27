@@ -60,7 +60,7 @@ public class CDOCZipOutputStream extends CloseShieldZipOutputStream {
     @Override
     public void close() throws IOException {
         try {
-            ZipEntry ze = new ZipEntry("payload.zip");
+            ZipEntry ze = new ZipEntry(CDOC.PAYLOAD_ZIP);
             if (privacy)
                 Container.strip(ze);
             byte[] payloadbytes = payload.toByteArray();
@@ -80,8 +80,8 @@ public class CDOCZipOutputStream extends CloseShieldZipOutputStream {
             log.debug("payload.zip size: {} ", (iv.length + cgram.length));
 
             // Write the manifest with correct size
-            mf.setFileSize("payload.zip", (iv.length + cgram.length));
-            ZipEntry manifest = new ZipEntry("META-INF/manifest.xml");
+            mf.setFileSize(CDOC.PAYLOAD_ZIP, (iv.length + cgram.length));
+            ZipEntry manifest = new ZipEntry(Manifest.MANIFEST_XML);
             if (privacy)
                 manifest = Container.strip(manifest);
 

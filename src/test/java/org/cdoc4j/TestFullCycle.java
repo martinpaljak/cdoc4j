@@ -24,7 +24,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import static org.cdoc4j.CDOC.VERSION;
+import static org.cdoc4j.CDOC.Version;
 
 
 public class TestFullCycle {
@@ -84,7 +84,7 @@ public class TestFullCycle {
     public void testV10RSA() throws Exception {
         // Create
         ByteArrayOutputStream mem = new ByteArrayOutputStream();
-        CDOCBuilder creator = new CDOCBuilder(CDOC.VERSION.CDOC_V1_0);
+        CDOCBuilder creator = new CDOCBuilder(Version.CDOC_V1_0);
         creator.addStream(HELLONAME, new ByteArrayInputStream(helloWorld));
         creator.addRecipient(rsacertificate);
         creator.setOutputStream(mem);
@@ -101,7 +101,7 @@ public class TestFullCycle {
     public void testV11RSA() throws Exception {
         // Create
         ByteArrayOutputStream mem = new ByteArrayOutputStream();
-        CDOCBuilder creator = new CDOCBuilder(CDOC.VERSION.CDOC_V1_1);
+        CDOCBuilder creator = new CDOCBuilder(Version.CDOC_V1_1);
         creator.addStream(HELLONAME, new ByteArrayInputStream(helloWorld));
         creator.addRecipient(rsacertificate);
         creator.setOutputStream(mem);
@@ -120,7 +120,7 @@ public class TestFullCycle {
     public void testV11ECC() throws Exception {
         // Create
         ByteArrayOutputStream mem = new ByteArrayOutputStream();
-        CDOCBuilder creator = new CDOCBuilder(CDOC.VERSION.CDOC_V1_1);
+        CDOCBuilder creator = new CDOCBuilder(Version.CDOC_V1_1);
         creator.addStream(HELLONAME, new ByteArrayInputStream(helloWorld));
         creator.addStream(BYENAME, new ByteArrayInputStream(byeWorld));
 
@@ -142,7 +142,7 @@ public class TestFullCycle {
     public void testV11Combined() throws Exception {
         // Create
         ByteArrayOutputStream mem = new ByteArrayOutputStream();
-        CDOCBuilder creator = new CDOCBuilder(CDOC.VERSION.CDOC_V1_1);
+        CDOCBuilder creator = new CDOCBuilder(Version.CDOC_V1_1);
         creator.addStream(HELLONAME, new ByteArrayInputStream(helloWorld));
         creator.addStream(BYENAME, new ByteArrayInputStream(byeWorld));
         creator.addRecipient(ecccertificate);
@@ -170,7 +170,7 @@ public class TestFullCycle {
     public void testV20RSA() throws Exception {
         // Create
         ByteArrayOutputStream mem = new ByteArrayOutputStream();
-        CDOCBuilder creator = new CDOCBuilder(CDOC.VERSION.CDOC_V2_0);
+        CDOCBuilder creator = new CDOCBuilder(Version.CDOC_V2_0);
         creator.addStream(HELLONAME, new ByteArrayInputStream(helloWorld));
         creator.addRecipient(rsacertificate);
         creator.withValidation(true);
@@ -189,7 +189,7 @@ public class TestFullCycle {
     public void testV20Combined() throws Exception {
         // Create
         ByteArrayOutputStream mem = new ByteArrayOutputStream();
-        CDOCBuilder creator = CDOC.builder().setVersion(CDOC.VERSION.CDOC_V2_0);
+        CDOCBuilder creator = CDOC.builder().setVersion(Version.CDOC_V2_0);
         creator.addStream(HELLONAME, new ByteArrayInputStream(helloWorld));
         creator.addStream(BYENAME, new ByteArrayInputStream(byeWorld));
 
@@ -218,7 +218,7 @@ public class TestFullCycle {
     public void testZipOutputStream() throws Exception {
         // Create
         ByteArrayOutputStream mem = new ByteArrayOutputStream();
-        CDOCBuilder creator = new CDOCBuilder(VERSION.CDOC_V2_0);
+        CDOCBuilder creator = new CDOCBuilder(Version.CDOC_V2_0);
         creator.addRecipient(ecccertificate);
         creator.setOutputStream(mem);
         creator.withPrivacy(true);
@@ -250,7 +250,7 @@ public class TestFullCycle {
 
         // Create
         ByteArrayOutputStream mem = new ByteArrayOutputStream();
-        CDOCBuilder creator = new CDOCBuilder(VERSION.CDOC_V2_0);
+        CDOCBuilder creator = new CDOCBuilder(Version.CDOC_V2_0);
         creator.addRecipient(ecccertificate);
         creator.addRecipient(rsacertificate);
         creator.setOutputStream(mem);

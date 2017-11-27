@@ -33,7 +33,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Manifest {
+public final class Manifest {
+    public static final String MANIFEST_XML = "META-INF/manifest.xml";
     ArrayList<String> errors = new ArrayList<>();
     private String mimetype; // mimetype of the package
     private ArrayList<ManifestEntry> files = new ArrayList<>(); // files listed in the manifest
