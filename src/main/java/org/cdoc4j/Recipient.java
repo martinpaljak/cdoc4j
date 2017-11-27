@@ -62,7 +62,7 @@ public abstract class Recipient {
     }
 
     public enum TYPE {
-        RSA, ECC
+        RSA, EC
     }
 
     public final static class ECDHESRecipient extends Recipient {
@@ -97,7 +97,7 @@ public abstract class Recipient {
 
         @Override
         public TYPE getType() {
-            return TYPE.ECC;
+            return TYPE.EC;
         }
     }
 

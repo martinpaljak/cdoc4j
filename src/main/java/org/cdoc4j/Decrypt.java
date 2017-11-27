@@ -40,7 +40,7 @@ public final class Decrypt {
     }
 
     public static SecretKey getKey(PrivateKey k, Recipient r) throws GeneralSecurityException {
-        if (r.getType() == Recipient.TYPE.ECC && k.getAlgorithm().startsWith("EC")) {
+        if (r.getType() == Recipient.TYPE.EC && k.getAlgorithm().startsWith("EC")) {
             return getKey(k, (Recipient.ECDHESRecipient) r);
         } else if (r.getType() == Recipient.TYPE.RSA && k.getAlgorithm().equals("RSA")) {
             return getKey(k, (Recipient.RSARecipient) r);
