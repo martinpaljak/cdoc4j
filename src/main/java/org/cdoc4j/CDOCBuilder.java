@@ -215,12 +215,16 @@ public final class CDOCBuilder {
                 cipherdata.appendChild(payload);
                 recipientsXML.getDocumentElement().appendChild(cipherdata);
 
-                // XXX: Add comments or file will not have content
+                // XXX: qdigidoc requires at least the same number of properties as files in the payload
+                // or the payload files willt not be shown after decryption. Having more properties
+                // than files in the payload shrinks the file list automatically.
                 Element props = recipientsXML.createElement("xenc:EncryptionProperties");
-                Element prop = recipientsXML.createElement("xenc:EncryptionProperty");
-                prop.setAttribute("Name", "orig_file");
-                prop.setTextContent("☠   DECRYPT FIRST   ☠|666|application/octet-stream|D0");
-                props.appendChild(prop);
+                for (String s: streams.keySet()) {
+                    Element prop = recipientsXML.createElement("xenc:EncryptionProperty");
+                    prop.setAttribute("Name", "orig_file");
+                    prop.setTextContent("☠   DECRYPT FIRST   ☠|666|application/octet-stream|D0");
+                    props.appendChild(prop);
+                }
                 recipientsXML.getDocumentElement().appendChild(props);
                 // Store to output stream
                 XML.dom2stream(recipientsXML, out);
