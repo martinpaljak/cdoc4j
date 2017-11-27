@@ -245,10 +245,17 @@ final class XMLENC {
         Element keyinfo = cdoc.createElement("ds:KeyInfo");
         root.appendChild(keyinfo);
 
-        // One for every recipient, dependent on algorithm
-        for (X509Certificate crt : recipients) {
-            Element enckey = toRecipient(cdoc, privacy ? "Undisclosed" : getCN(crt), crt, dek, privacy);
-            keyinfo.appendChild(enckey);
+        // Handle special case - pre-shared key
+        if (v == CDOC.Version.CDOC_V2_0 && recipients.size() == 0) {
+            Element keyname = cdoc.createElement("ds:KeyName");
+            keyname.setTextContent("Pre-shared key");
+            keyinfo.appendChild(keyname);
+        } else {
+            // One for every recipient, dependent on algorithm
+            for (X509Certificate crt : recipients) {
+                Element enckey = toRecipient(cdoc, privacy ? "Undisclosed" : getCN(crt), crt, dek, privacy);
+                keyinfo.appendChild(enckey);
+            }
         }
         // For XML encapsulation, caller adds children
         return cdoc;

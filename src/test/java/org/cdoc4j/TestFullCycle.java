@@ -244,7 +244,7 @@ public class TestFullCycle {
 
     @Test
     public void testZipInputStream() throws Exception {
-        // USe a static key
+        // Use a static key
         byte[] key = new byte[32];
         CDOC.random.nextBytes(key);
 

@@ -6,6 +6,7 @@ import org.junit.*;
 import org.junit.rules.TestName;
 
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -23,12 +24,20 @@ import java.util.Date;
 import java.util.Map;
 
 public class TestEncryptDummy {
-    static Path dummy;
 
+    static Path dummy;
     static X509Certificate ecc;
     static X509Certificate rsa;
-
     static boolean deleteOnExit = true;
+
+    static {
+        // Set up slf4j simple in a way that pleases us
+        System.setProperty("org.slf4j.simpleLogger.showThreadName", "false");
+        System.setProperty("org.slf4j.simpleLogger.levelInBrackets", "true");
+        System.setProperty("org.slf4j.simpleLogger.showShortLogName", "true");
+        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "trace");
+    }
+
     @Rule
     public TestName name = new TestName();
     Path tmp;
@@ -113,6 +122,32 @@ public class TestEncryptDummy {
         creator.setOutputStream(Files.newOutputStream(tmp));
         creator.build();
     }
+
+    @Test
+    public void testEncryptionV20preshared() throws Exception {
+        byte[] key = new byte[32];
+        CDOC.random.nextBytes(key);
+        CDOCBuilder creator = new CDOCBuilder(CDOC.Version.CDOC_V2_0);
+        creator.addPath(dummy);
+        creator.withTransportKey(key);
+        creator.withValidation(true);
+        creator.setOutputStream(Files.newOutputStream(tmp));
+        //creator.build();
+
+        creator.buildToStream(Files.newOutputStream(tmp));
+
+
+        // Read back in
+        Assert.assertTrue(CDOC.isCDOC(tmp.toFile()));
+        Assert.assertFalse(CDOC.isCDOC(dummy.toFile()));
+
+        CDOC cdoc = CDOC.open(tmp.toFile());
+        Assert.assertEquals(0, cdoc.getRecipients().size());
+        Assert.assertNotNull("Not pre-shared key", cdoc.preSharedKey());
+        Map<String, byte[]> files = cdoc.getFiles(new SecretKeySpec(key, "AES"));
+        Assert.assertEquals(1, files.size());
+    }
+
 
     @Test(expected = IllegalArgumentException.class)
     public void testEncryptionV10ECC() throws Exception {

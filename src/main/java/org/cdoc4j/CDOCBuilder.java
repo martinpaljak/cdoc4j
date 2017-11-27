@@ -165,7 +165,7 @@ public final class CDOCBuilder {
     public void build() throws IOException, GeneralSecurityException {
         ArrayList<AutoCloseable> toClose = new ArrayList<>();
         try {
-            if (out == null || recipients.size() == 0 || (streams.size() == 0 && files.size() == 0 && paths.size() == 0)) {
+            if (out == null || (recipients.size() == 0 && key == null) || (streams.size() == 0 && files.size() == 0 && paths.size() == 0)) {
                 throw new IllegalStateException("Need to have output stream, files and recipients");
             }
 
@@ -257,7 +257,7 @@ public final class CDOCBuilder {
     public ZipOutputStream buildZipOutputStream() throws IOException, GeneralSecurityException {
         if (version != CDOC.Version.CDOC_V2_0)
             throw new IllegalStateException("ZIP output stream is only available for CDOC 2.0");
-        if (out == null || recipients.size() == 0) {
+        if (out == null || (recipients.size() == 0 && key == null)) {
             throw new IllegalStateException("Need to have output stream and recipients!");
         }
 

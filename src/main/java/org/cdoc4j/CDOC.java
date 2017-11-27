@@ -125,6 +125,21 @@ public final class CDOC implements AutoCloseable {
         }
     }
 
+    public static boolean isCDOC(File f) throws IOException {
+        if (f.isFile() && f.getName().toLowerCase().endsWith(".cdoc"))
+            return true;
+        try (InputStream in = new FileInputStream(f)) {
+            byte[] header = new byte[38 + MIMETYPE.length()];
+            if (in.read(header, 0, header.length) >= header.length) {
+                String pk = new String(header, 0, 2, StandardCharsets.US_ASCII.name());
+                String mimetype = new String(header, 30, 8, StandardCharsets.US_ASCII.name());
+                String realmime = new String(header, 38, MIMETYPE.length(), StandardCharsets.US_ASCII.name());
+                return pk.equals("PK") && mimetype.equals("mimetype") && realmime.equals(MIMETYPE);
+            }
+        }
+        return false;
+    }
+
     private static CDOC fromXMLStream(InputStream in) throws IOException, CertificateException {
         Document d = XML.stream2dom(in);
         final Version v;
@@ -187,6 +202,15 @@ public final class CDOC implements AutoCloseable {
             }
         }
         return algorithm;
+    }
+
+    public String preSharedKey() {
+        try {
+            return XML.xPath.evaluate("/xenc:EncryptedData/ds:KeyInfo/ds:KeyName", xml);
+        } catch (XPathExpressionException e) {
+            log.error("KeyInfo/KeyName not found: {}", e.getMessage(), e);
+        }
+        return null;
     }
 
     // Gets encrypted payload stream
