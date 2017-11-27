@@ -4,7 +4,7 @@
 ## Introduction
 CDOC is a file format for storing encrypted data together with data for/about intended recipients.
 
-The main goals of CDOC v2.0 format over [CDOC v1.0](https://github.com/martinpaljak/idcrypt/wiki/CDOC-1.0) (and CDOC v1.1) are resource-effectiveness when processing containers (less XML parsing), compatibility with ASiC containers (based on OpenDocument v1.2 ZIP packages) and general alignment with newer and future standards and specifications.
+The main goals of CDOC v2.0 format over [CDOC v1.0](https://github.com/martinpaljak/cdoc/wiki/CDOC-1.0) (and CDOC v1.1) are resource-effectiveness when processing containers (less XML parsing), compatibility with ASiC containers (based on OpenDocument v1.2 ZIP packages) and general alignment with newer and future standards and specifications.
 
 It defines and clarifies the subset of relevant standards and provides guidelines and requirements for compliant implementations.
 
