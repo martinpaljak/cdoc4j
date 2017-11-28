@@ -56,6 +56,7 @@ import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
 import java.security.spec.ECPublicKeySpec;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 
@@ -64,17 +65,17 @@ final class XMLENC {
     final static String ALGORITHM = "Algorithm";
 
     // Returns elements to be added to the CDOC XML, based on recipient type
-    private static Element toRecipient(Document cdoc, String name, X509Certificate cert, SecretKey dek, boolean includecert) throws GeneralSecurityException {
+    private static Element toRecipient(Document cdoc, CDOC.Version v, String name, X509Certificate cert, SecretKey dek, boolean includecert) throws GeneralSecurityException {
         if (cert.getPublicKey() instanceof ECPublicKey) {
-            return toECRecipient(cdoc, name, cert, dek, includecert);
+            return toECRecipient(cdoc, v, name, cert, dek, includecert);
         } else if (cert.getPublicKey() instanceof RSAPublicKey) {
-            return toRSARecipient(cdoc, name, cert, dek, includecert);
+            return toRSARecipient(cdoc, v, name, cert, dek, includecert);
         } else {
             throw new IllegalArgumentException("Unknown public key algorithm: " + cert.getPublicKey().getAlgorithm());
         }
     }
 
-    private static Element toRSARecipient(Document cdoc, String name, X509Certificate cert, SecretKey dek, boolean includecert) throws GeneralSecurityException {
+    private static Element toRSARecipient(Document cdoc, CDOC.Version v, String name, X509Certificate cert, SecretKey dek, boolean includecert) throws GeneralSecurityException {
         Element enckey = cdoc.createElement("xenc:EncryptedKey");
         enckey.setAttribute("Recipient", name);
 
@@ -108,14 +109,18 @@ final class XMLENC {
         return enckey;
     }
 
-    private static Element toECRecipient(Document cdoc, String name, X509Certificate cert, SecretKey dek, boolean includecert) throws GeneralSecurityException {
+    private static Element toECRecipient(Document cdoc, CDOC.Version v, String name, X509Certificate cert, SecretKey dek, boolean includecert) throws GeneralSecurityException {
         ECPublicKey k = (ECPublicKey) cert.getPublicKey();
 
-        // Generate temporary key.
+        // Generate ephemeral key.
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC");
         kpg.initialize(k.getParams());
         KeyPair keyPair = kpg.generateKeyPair();
 
+        SubjectPublicKeyInfo partyVkey = SubjectPublicKeyInfo.getInstance(k.getEncoded());
+        SubjectPublicKeyInfo partyUkey = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
+
+        // Construct XML
         Element enckey = cdoc.createElement("xenc:EncryptedKey");
         enckey.setAttribute("Recipient", name);
 
@@ -132,28 +137,35 @@ final class XMLENC {
         //
         Element kdm = cdoc.createElement("xenc11:KeyDerivationMethod");
         kdm.setAttribute(ALGORITHM, "http://www.w3.org/2009/xmlenc11#ConcatKDF");
-        //
 
-        // Get the OID
-        SubjectPublicKeyInfo subPubKeyInfo = SubjectPublicKeyInfo.getInstance(k.getEncoded());
-        SubjectPublicKeyInfo tempKeyInfo = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
 
-        //System.out.println(subPubKeyInfo.getAlgorithm().getParameters());
-
-        //
         // String curveName = "urn:oid:" + ASN1ObjectIdentifier.getInstance(subPubKeyInfo.getAlgorithm().getParameters()).toString();
-        String curveName = "urn:oid:" + subPubKeyInfo.getAlgorithm().getParameters().toString();
+        String curveName = "urn:oid:" + partyVkey.getAlgorithm().getParameters().toString();
         //System.out.println(curveName);
 
         // CRITICAL
-        byte[] algid = "http://www.w3.org/2001/04/xmlenc#kw-aes256".getBytes(StandardCharsets.US_ASCII);
-        byte[] uinfo = tempKeyInfo.getPublicKeyData().getBytes();
-        byte[] vinfo = getCN(cert).getBytes(StandardCharsets.UTF_8);
+        final byte[] algid;
+        final byte[] uinfo;
+        final byte[] vinfo;
+
+        // This if assumes that EC is only possible with v11 and v20
+        // Formatting conforms to hexBinary with zero padding
+        if (v == CDOC.Version.CDOC_V1_1) {
+            algid = "ENCDOC-XML|1.1".getBytes(StandardCharsets.US_ASCII);
+            uinfo = partyUkey.getPublicKeyData().getBytes();
+            vinfo = cert.getEncoded();
+        } else if (v == CDOC.Version.CDOC_V2_0) {
+            algid = "http://www.w3.org/2001/04/xmlenc#kw-aes256".getBytes(StandardCharsets.US_ASCII);
+            uinfo = partyUkey.getPublicKeyData().getBytes();
+            vinfo = partyVkey.getPublicKeyData().getBytes();
+        } else {
+            throw new IllegalStateException("Invalid document version for EC recipient");
+        }
 
         Element ckdfp = cdoc.createElement("xenc11:ConcatKDFParams");
-        ckdfp.setAttribute("AlgorithmID", Hex.toHexString(algid));
-        ckdfp.setAttribute("PartyUInfo", Hex.toHexString(uinfo));
-        ckdfp.setAttribute("PartyVInfo", Hex.toHexString(vinfo));
+        ckdfp.setAttribute("AlgorithmID", Hex.toHexString(Legacy.concatenate(new byte[]{0x00}, algid)));
+        ckdfp.setAttribute("PartyUInfo", Hex.toHexString(Legacy.concatenate(new byte[]{0x00}, uinfo)));
+        ckdfp.setAttribute("PartyVInfo", Hex.toHexString(Legacy.concatenate(new byte[]{0x00}, vinfo)));
         Element dm = cdoc.createElement("ds:DigestMethod");
         dm.setAttribute(ALGORITHM, "http://www.w3.org/2001/04/xmlenc#sha256");
         ckdfp.appendChild(dm);
@@ -167,7 +179,7 @@ final class XMLENC {
         eckvnc.setAttribute("URI", curveName);
         eckv.appendChild(eckvnc);
         Element ecpk = cdoc.createElement("dsig11:PublicKey");
-        ecpk.setTextContent(Base64.getEncoder().encodeToString(tempKeyInfo.getPublicKeyData().getBytes()));
+        ecpk.setTextContent(Base64.getEncoder().encodeToString(partyUkey.getPublicKeyData().getBytes()));
         eckv.appendChild(ecpk);
 
         kv.appendChild(eckv);
@@ -192,6 +204,7 @@ final class XMLENC {
         KeyAgreement key_agreement = KeyAgreement.getInstance("ECDH");
         key_agreement.init(keyPair.getPrivate());
         key_agreement.doPhase(cert.getPublicKey(), true);
+
         // Use the shared secret to wrap the actual key
         byte[] shared_secret = key_agreement.generateSecret();
 
@@ -199,7 +212,6 @@ final class XMLENC {
         ConcatenationKDFGenerator ckdf = new ConcatenationKDFGenerator(new SHA384Digest()); // FIXME: parametrize
         ckdf.init(new KDFParameters(shared_secret, Legacy.concatenate(algid, uinfo, vinfo)));
         byte[] wrapkeybytes = new byte[32];
-
         ckdf.generateBytes(wrapkeybytes, 0, 32);
 
         SecretKeySpec wrapKey = new SecretKeySpec(wrapkeybytes, "AES");
@@ -253,7 +265,7 @@ final class XMLENC {
         } else {
             // One for every recipient, dependent on algorithm
             for (X509Certificate crt : recipients) {
-                Element enckey = toRecipient(cdoc, privacy ? "Undisclosed" : getCN(crt), crt, dek, privacy);
+                Element enckey = toRecipient(cdoc, v, privacy ? "Undisclosed" : getCN(crt), crt, dek, privacy);
                 keyinfo.appendChild(enckey);
             }
         }
@@ -284,6 +296,13 @@ final class XMLENC {
                     byte a[] = Hex.decode(params.getAttributes().getNamedItem("AlgorithmID").getTextContent());
                     byte u[] = Hex.decode(params.getAttributes().getNamedItem("PartyUInfo").getTextContent());
                     byte v[] = Hex.decode(params.getAttributes().getNamedItem("PartyVInfo").getTextContent());
+                    // Support only full octets
+                    if (a[0] != 0 || u[0] != 0 || v[0] != 0) {
+                        throw new IOException("Only full octets supported for AlgorithmID, PartyUInfo and PartyVInfo");
+                    }
+                    a = Arrays.copyOfRange(a, 1, a.length);
+                    u = Arrays.copyOfRange(u, 1, u.length);
+                    v = Arrays.copyOfRange(v, 1, v.length);
 
                     String kdf = params.getParentNode().getAttributes().getNamedItem("Algorithm").getTextContent();
                     if (!kdf.equals("http://www.w3.org/2009/xmlenc11#ConcatKDF"))
@@ -313,7 +332,7 @@ final class XMLENC {
                     Recipient.ECDHESRecipient r = new Recipient.ECDHESRecipient(cert, name, pk, cgram, a, u, v);
                     result.add(r);
                 } else {
-                    throw new RuntimeException("Unknown key encryption algorithm: " + algorithm);
+                    throw new IOException("Unknown key encryption algorithm: " + algorithm);
                 }
             }
         } catch (XPathExpressionException | GeneralSecurityException | NullPointerException e) {
