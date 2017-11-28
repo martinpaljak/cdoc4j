@@ -188,7 +188,7 @@ public class TestEncryptDummy {
         creator.addRecipient(ecc);
         creator.addRecipient(rsa);
         creator.addRecipient(c);
-        creator.withValidation(true);
+        //creator.withValidation(true);
         creator.setOutputStream(mem);
         creator.build();
 

@@ -219,13 +219,16 @@ public final class CDOCBuilder {
                 // or the payload files willt not be shown after decryption. Having more properties
                 // than files in the payload shrinks the file list automatically.
                 Element props = recipientsXML.createElement("xenc:EncryptionProperties");
-                for (String s: streams.keySet()) {
+                for (String s : streams.keySet()) {
                     Element prop = recipientsXML.createElement("xenc:EncryptionProperty");
                     prop.setAttribute("Name", "orig_file");
                     prop.setTextContent("☠   DECRYPT FIRST   ☠|666|application/octet-stream|D0");
                     props.appendChild(prop);
                 }
                 recipientsXML.getDocumentElement().appendChild(props);
+                if (validate && !XML.validate_cdoc(XML.dom2bytes(recipientsXML))) {
+                    throw new IllegalStateException("Generated XML did not validate!");
+                }
                 // Store to output stream
                 XML.dom2stream(recipientsXML, out);
             } else {

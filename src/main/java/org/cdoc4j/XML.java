@@ -200,8 +200,9 @@ public final class XML {
             });
 
             db.parse(new ByteArrayInputStream(d));
-            if (warnings.size() > 0)
-                log.debug("Total of {} warnings or errors", warnings.size());
+            for (String w : warnings) {
+                log.error("XML validation error: {}", w);
+            }
             return warnings.size() == 0;
         } catch (ParserConfigurationException | SAXException | IOException e) {
             log.error("Failed to validate: {} ", e.getMessage());
