@@ -26,6 +26,7 @@ import org.apache.commons.io.IOUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -218,6 +219,8 @@ public final class CDOCBuilder {
                 // XXX: qdigidoc requires at least the same number of properties as files in the payload
                 // or the payload files willt not be shown after decryption. Having more properties
                 // than files in the payload shrinks the file list automatically.
+                Comment propscomm = recipientsXML.createComment("This is non-standard brainfart in CDOC-1.X and qdigidoc client");
+                recipientsXML.getDocumentElement().appendChild(propscomm);
                 Element props = recipientsXML.createElement("xenc:EncryptionProperties");
                 for (String s : streams.keySet()) {
                     Element prop = recipientsXML.createElement("xenc:EncryptionProperty");
