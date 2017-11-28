@@ -32,6 +32,9 @@ import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 
+/**
+ * Helper methods for decrypting the DEK from per-recipient cryptograms
+ */
 public final class Decrypt {
 
     public static SecretKey getKey(KeyPair kp, Recipient r, EncryptionMethod e) throws GeneralSecurityException {
