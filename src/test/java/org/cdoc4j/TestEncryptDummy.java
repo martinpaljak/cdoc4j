@@ -200,7 +200,7 @@ public class TestEncryptDummy {
         for (Recipient r : recipients) {
             System.out.println("Recipient of type " + r.getType() + " name is " + r.getName());
             if (r.getName().contains("EINSTEIN")) {
-                SecretKey dek = Decrypt.getKey(keyPair, r);
+                SecretKey dek = Decrypt.getKey(keyPair, r, cdoc.getAlgorithm());
                 // Use DEK to decrypt
                 ByteArrayOutputStream pload = new ByteArrayOutputStream();
                 cdoc.decrypt(dek, pload);

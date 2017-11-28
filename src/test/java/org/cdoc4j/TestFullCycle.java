@@ -92,7 +92,7 @@ public class TestFullCycle {
 
 
         CDOC cdoc = CDOC.from(new ByteArrayInputStream(mem.toByteArray()));
-        SecretKey dek = Decrypt.getKey(rsakeypair, cdoc.getRecipients().get(0));
+        SecretKey dek = Decrypt.getKey(rsakeypair, cdoc.getRecipients().get(0), cdoc.getAlgorithm());
         Map<String, byte[]> files = cdoc.getFiles(dek);
         Assert.assertTrue(Arrays.equals(helloWorld, files.get(HELLONAME)));
     }
@@ -110,7 +110,7 @@ public class TestFullCycle {
 
         CDOC cdoc = CDOC.from(new ByteArrayInputStream(mem.toByteArray()));
         Assert.assertEquals(1, cdoc.getRecipients().size());
-        SecretKey dek = Decrypt.getKey(rsakeypair, cdoc.getRecipients().get(0));
+        SecretKey dek = Decrypt.getKey(rsakeypair, cdoc.getRecipients().get(0), cdoc.getAlgorithm());
         Map<String, byte[]> files = cdoc.getFiles(dek);
         Assert.assertEquals(1, files.size());
         Assert.assertTrue(Arrays.equals(helloWorld, files.get(HELLONAME)));
@@ -131,7 +131,7 @@ public class TestFullCycle {
 
         CDOC cdoc = CDOC.from(new ByteArrayInputStream(mem.toByteArray()));
         Assert.assertEquals(1, cdoc.getRecipients().size());
-        SecretKey dek = Decrypt.getKey(ecckeypair, cdoc.getRecipients().get(0));
+        SecretKey dek = Decrypt.getKey(ecckeypair, cdoc.getRecipients().get(0), cdoc.getAlgorithm());
         Map<String, byte[]> files = cdoc.getFiles(dek);
         Assert.assertEquals(2, files.size());
         Assert.assertTrue(Arrays.equals(helloWorld, files.get(HELLONAME)));
@@ -153,12 +153,12 @@ public class TestFullCycle {
 
         CDOC cdoc = CDOC.from(new ByteArrayInputStream(mem.toByteArray()));
         Assert.assertEquals(2, cdoc.getRecipients().size());
-        SecretKey dek = Decrypt.getKey(ecckeypair, cdoc.getRecipients().get(0));
+        SecretKey dek = Decrypt.getKey(ecckeypair, cdoc.getRecipients().get(0), cdoc.getAlgorithm());
         Map<String, byte[]> files = cdoc.getFiles(dek);
         Assert.assertEquals(2, files.size());
         Assert.assertTrue(Arrays.equals(helloWorld, files.get(HELLONAME)));
 
-        dek = Decrypt.getKey(rsakeypair, cdoc.getRecipients().get(1));
+        dek = Decrypt.getKey(rsakeypair, cdoc.getRecipients().get(1), cdoc.getAlgorithm());
         files = cdoc.getFiles(dek);
         Assert.assertEquals(2, files.size());
         Assert.assertTrue(Arrays.equals(byeWorld, files.get(BYENAME)));
@@ -179,7 +179,7 @@ public class TestFullCycle {
 
         CDOC cdoc = CDOC.from(new ByteArrayInputStream(mem.toByteArray()));
         Assert.assertEquals(1, cdoc.getRecipients().size());
-        SecretKey dek = Decrypt.getKey(rsakeypair, cdoc.getRecipients().get(0));
+        SecretKey dek = Decrypt.getKey(rsakeypair, cdoc.getRecipients().get(0), cdoc.getAlgorithm());
         Map<String, byte[]> files = cdoc.getFiles(dek);
         Assert.assertEquals(1, files.size());
         Assert.assertTrue(Arrays.equals(helloWorld, files.get(HELLONAME)));
@@ -202,11 +202,11 @@ public class TestFullCycle {
 
         CDOC cdoc = CDOC.from(new ByteArrayInputStream(mem.toByteArray()));
         Assert.assertEquals(2, cdoc.getRecipients().size());
-        SecretKey dek = Decrypt.getKey(rsakeypair, cdoc.getRecipients().get(0));
+        SecretKey dek = Decrypt.getKey(rsakeypair, cdoc.getRecipients().get(0), cdoc.getAlgorithm());
         Map<String, byte[]> files = cdoc.getFiles(dek);
         Assert.assertEquals(2, files.size());
         Assert.assertTrue(Arrays.equals(helloWorld, files.get(HELLONAME)));
-        dek = Decrypt.getKey(ecckeypair, cdoc.getRecipients().get(1));
+        dek = Decrypt.getKey(ecckeypair, cdoc.getRecipients().get(1), cdoc.getAlgorithm());
         // This will not work with a stream backed reader without caching
         files = cdoc.getFiles(dek);
         Assert.assertEquals(2, files.size());
@@ -234,7 +234,7 @@ public class TestFullCycle {
 
         CDOC cdoc = CDOC.from(new ByteArrayInputStream(mem.toByteArray()));
         Assert.assertEquals(1, cdoc.getRecipients().size());
-        SecretKey dek = Decrypt.getKey(ecckeypair, cdoc.getRecipients().get(0));
+        SecretKey dek = Decrypt.getKey(ecckeypair, cdoc.getRecipients().get(0), cdoc.getAlgorithm());
         Map<String, byte[]> files = cdoc.getFiles(dek);
         Assert.assertEquals(2, files.size());
         Assert.assertTrue(Arrays.equals(helloWorld, files.get(HELLONAME)));

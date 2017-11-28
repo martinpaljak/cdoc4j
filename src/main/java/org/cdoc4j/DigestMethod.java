@@ -39,10 +39,14 @@ public enum DigestMethod {
 
     public Digest getDigest() {
         switch (this) {
-            case SHA_256: return new SHA256Digest();
-            case SHA_512: return new SHA512Digest();
-            case SHA_384: return new SHA384Digest();
-            default: throw new IllegalStateException("Unknown digest");
+            case SHA_256:
+                return new SHA256Digest();
+            case SHA_512:
+                return new SHA512Digest();
+            case SHA_384:
+                return new SHA384Digest();
+            default:
+                throw new IllegalStateException("Unknown digest");
         }
     }
 }

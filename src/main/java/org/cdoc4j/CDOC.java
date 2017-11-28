@@ -144,14 +144,16 @@ public final class CDOC implements AutoCloseable {
         Document d = XML.stream2dom(in);
         final Version v;
         try {
-            String algorithm = XML.xPath.evaluate("/xenc:EncryptedData/xenc:EncryptionMethod/@Algorithm", d);
-            if (algorithm.equals(EncryptionMethod.AES256_GCM.getAlgorithmURI())) {
+            EncryptionMethod algorithm = EncryptionMethod.fromURI(XML.xPath.evaluate("/xenc:EncryptedData/xenc:EncryptionMethod/@Algorithm", d));
+            if (algorithm == null)
+                throw new IOException("EncryptionMethod/@Algorithm not found");
+            if (algorithm == EncryptionMethod.AES256_GCM) {
                 v = Version.CDOC_V1_1;
             } else {
                 v = Version.CDOC_V1_0;
             }
         } catch (XPathExpressionException e) {
-            throw new IOException("EncryptionMethod/@Algorithm not found", e);
+            throw new IOException("Could not extract EncryptionMethod/@Algorithm", e);
         }
         Collection<Recipient> recipients = XMLENC.parseRecipientsXML(d);
         return new CDOC(d, v, recipients);

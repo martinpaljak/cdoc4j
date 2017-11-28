@@ -35,4 +35,15 @@ public enum EncryptionMethod {
     public String getCipherName() {
         return cipher;
     }
+
+    public int getKeyLength() {
+        switch (this) {
+            case AES128_CBC:
+                return 16;
+            case AES256_GCM:
+                return 32;
+            default:
+                throw new IllegalStateException("Unknown EncryptionMethod");
+        }
+    }
 }
