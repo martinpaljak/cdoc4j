@@ -47,6 +47,9 @@ import java.util.Map;
 // CDOC 1.0 hacks
 public final class Legacy {
 
+    static final String DIGIDOC_NS = "http://www.sk.ee/DigiDoc/v1.3.0#";
+    static final String DIGIDOC_XSD = "http://www.sk.ee/DigiDoc/v1.3.0/digidoc.xsd";
+
     public static void encrypt_cbc(InputStream in, SecretKey key, byte[] iv, OutputStream out) throws IOException, GeneralSecurityException {
         if (iv.length != 16)
             throw new IllegalArgumentException("IV must be 16 bytes (128 bits)");
@@ -118,7 +121,7 @@ public final class Legacy {
         Document payload = XML.getDocument();
 
         Element root = payload.createElement("SignedDoc");
-        root.setAttribute("xmlns", "http://www.sk.ee/DigiDoc/v1.3.0#");
+        root.setAttribute("xmlns", DIGIDOC_NS);
         root.setAttribute("format", "DIGIDOC-XML");
         root.setAttribute("version", "1.3");
         payload.appendChild(root);

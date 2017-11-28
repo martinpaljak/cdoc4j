@@ -240,13 +240,14 @@ final class XMLENC {
         root.setAttribute("xmlns:ds", "http://www.w3.org/2000/09/xmldsig#");
         root.setAttribute("xmlns:dsig11", "http://www.w3.org/2009/xmldsig11#");
 
-        cdoc.appendChild(root);
         if (v == CDOC.Version.CDOC_V1_0 || v == CDOC.Version.CDOC_V1_1) {
-            cdoc.insertBefore(cdoc.createComment("XXX: this is not a MIME type"), root);
-            root.setAttribute("MimeType", "http://www.sk.ee/DigiDoc/v1.3.0/digidoc.xsd");
+            root.setAttribute("MimeType", Legacy.DIGIDOC_XSD);
+            root.appendChild(cdoc.createComment(" XXX: this MimeType above is not actually a mime type "));
+
         } else if (v == CDOC.Version.CDOC_V2_0) {
             root.setAttribute("MimeType", "application/zip");
         }
+        cdoc.appendChild(root);
 
         // Data encryption.
         Element encmethod = cdoc.createElement("xenc:EncryptionMethod");
@@ -323,7 +324,7 @@ final class XMLENC {
                         CertificateFactory cf = CertificateFactory.getInstance("X509");
                         cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(Base64.getMimeDecoder().decode(certb64)));
                     }
-                    byte[] cgram = Base64.getDecoder().decode(XML.xPath.evaluate("xenc:CipherData/xenc:CipherValue", n));
+                    byte[] cgram = Base64.getMimeDecoder().decode(XML.xPath.evaluate("xenc:CipherData/xenc:CipherValue", n));
                     // XXX: Assumes P384
                     Node key = (Node) XML.xPath.evaluate("ds:KeyInfo/xenc:AgreementMethod/xenc:OriginatorKeyInfo/ds:KeyValue/dsig11:ECKeyValue/dsig11:PublicKey", n, XPathConstants.NODE);
 
@@ -332,7 +333,7 @@ final class XMLENC {
                         throw new IOException("Could not parse recipients.xml: unknown curve secp384r1");
                     }
                     ECParameterSpec secp384r1 = new ECNamedCurveSpec(sp.getName(), sp.getCurve(), sp.getG(), sp.getN(), sp.getH());
-                    ECPoint point = ECPointUtil.decodePoint(secp384r1.getCurve(), Base64.getDecoder().decode(key.getTextContent()));
+                    ECPoint point = ECPointUtil.decodePoint(secp384r1.getCurve(), Base64.getMimeDecoder().decode(key.getTextContent()));
                     KeyFactory eckf = KeyFactory.getInstance("EC");
                     ECPublicKey pk = (ECPublicKey) eckf.generatePublic(new ECPublicKeySpec(point, secp384r1));
                     Recipient.ECDHESRecipient r = new Recipient.ECDHESRecipient(cert, name, pk, dm, cgram, a, u, v);

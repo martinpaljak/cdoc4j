@@ -69,11 +69,14 @@ public final class CDOC implements AutoCloseable {
     private Version version;
     private transient Map<String, byte[]> files = null;
     private EncryptionMethod algorithm;
+    private boolean singleFile = false;
 
     private CDOC(Document d, Version v, Collection<Recipient> recipients) {
         this.xml = d;
         this.recipients = new ArrayList<>(recipients);
         this.version = v;
+        if (d.getDocumentElement().hasAttribute("MimeType") && !d.getDocumentElement().getAttribute("MimeType").equals(Legacy.DIGIDOC_XSD))
+            singleFile = true;
         log.trace("Loaded CDOC with {} recipients", recipients.size());
     }
 
@@ -321,7 +324,12 @@ public final class CDOC implements AutoCloseable {
             if (version == Version.CDOC_V1_0 || version == Version.CDOC_V1_1) {
                 ByteArrayOutputStream plaintext = new ByteArrayOutputStream();
                 decrypt(dek, plaintext);
-                files = Legacy.extractPayload(plaintext.toByteArray());
+                if (singleFile) {
+                    files = new HashMap<>();
+                    files.put("payload.blah", plaintext.toByteArray()); // FIXME: file name
+                } else {
+                    files = Legacy.extractPayload(plaintext.toByteArray());
+                }
             } else if (version == Version.CDOC_V2_0) {
                 try (ZipInputStream zin = getZipInputStream(dek)) {
                     ZipEntry e;
