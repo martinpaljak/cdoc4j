@@ -243,6 +243,8 @@ final class XMLENC {
         cdoc.appendChild(root);
         if (v == CDOC.Version.CDOC_V1_0 || v == CDOC.Version.CDOC_V1_1) {
             root.setAttribute("MimeType", "http://www.sk.ee/DigiDoc/v1.3.0/digidoc.xsd");
+        } else if (v == CDOC.Version.CDOC_V2_0) {
+            root.setAttribute("MimeType", "application/zip");
         }
 
         // Data encryption.
