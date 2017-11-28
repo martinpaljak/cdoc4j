@@ -215,6 +215,7 @@ final class XMLENC {
 
         SecretKeySpec wrapKey = new SecretKeySpec(wrapkeybytes, "AES");
         // Wrap the actual key with the derived key
+        // coverity[RISKY_CRYPTO]
         Cipher c = Cipher.getInstance("AESWrap");
         c.init(Cipher.WRAP_MODE, wrapKey);
         byte[] cgram = c.wrap(dek);
