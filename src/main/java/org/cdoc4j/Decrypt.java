@@ -22,7 +22,6 @@
 package org.cdoc4j;
 
 import org.bouncycastle.crypto.agreement.kdf.ConcatenationKDFGenerator;
-import org.bouncycastle.crypto.digests.SHA384Digest;
 import org.bouncycastle.crypto.params.KDFParameters;
 
 import javax.crypto.Cipher;
@@ -60,7 +59,7 @@ public final class Decrypt {
     // Assumes AES-256
     public static SecretKey getKey(final byte[] shared_secret, Recipient.ECDHESRecipient r) throws GeneralSecurityException {
         // Derive unwrap key with KDF
-        ConcatenationKDFGenerator ckdf = new ConcatenationKDFGenerator(new SHA384Digest()); // FIXME: parametrize
+        ConcatenationKDFGenerator ckdf = new ConcatenationKDFGenerator(r.getDigestMethod().getDigest());
         ckdf.init(new KDFParameters(shared_secret, Legacy.concatenate(r.getAlgorithmID(), r.getPartyUInfo(), r.getPartyVInfo())));
         byte[] wrapkeybytes = new byte[32];
         ckdf.generateBytes(wrapkeybytes, 0, 32);

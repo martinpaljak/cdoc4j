@@ -23,7 +23,6 @@ package org.cdoc4j;
 
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.crypto.agreement.kdf.ConcatenationKDFGenerator;
-import org.bouncycastle.crypto.digests.SHA384Digest;
 import org.bouncycastle.crypto.params.KDFParameters;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.ECPointUtil;
@@ -67,7 +66,7 @@ final class XMLENC {
     // Returns elements to be added to the CDOC XML, based on recipient type
     private static Element toRecipient(Document cdoc, CDOC.Version v, String name, X509Certificate cert, SecretKey dek, boolean includecert) throws GeneralSecurityException {
         if (cert.getPublicKey() instanceof ECPublicKey) {
-            return toECRecipient(cdoc, v, name, cert, dek, includecert);
+            return toECRecipient(cdoc, v, name, cert, dek, includecert, DigestMethod.SHA_384);
         } else if (cert.getPublicKey() instanceof RSAPublicKey) {
             return toRSARecipient(cdoc, v, name, cert, dek, includecert);
         } else {
@@ -109,7 +108,7 @@ final class XMLENC {
         return enckey;
     }
 
-    private static Element toECRecipient(Document cdoc, CDOC.Version v, String name, X509Certificate cert, SecretKey dek, boolean includecert) throws GeneralSecurityException {
+    private static Element toECRecipient(Document cdoc, CDOC.Version v, String name, X509Certificate cert, SecretKey dek, boolean includecert, DigestMethod dm) throws GeneralSecurityException {
         ECPublicKey k = (ECPublicKey) cert.getPublicKey();
 
         // Generate ephemeral key.
@@ -166,9 +165,9 @@ final class XMLENC {
         ckdfp.setAttribute("AlgorithmID", Hex.toHexString(Legacy.concatenate(new byte[]{0x00}, algid)));
         ckdfp.setAttribute("PartyUInfo", Hex.toHexString(Legacy.concatenate(new byte[]{0x00}, uinfo)));
         ckdfp.setAttribute("PartyVInfo", Hex.toHexString(Legacy.concatenate(new byte[]{0x00}, vinfo)));
-        Element dm = cdoc.createElement("ds:DigestMethod");
-        dm.setAttribute(ALGORITHM, "http://www.w3.org/2001/04/xmlenc#sha256");
-        ckdfp.appendChild(dm);
+        Element xdm = cdoc.createElement("ds:DigestMethod");
+        xdm.setAttribute(ALGORITHM, dm.getAlgorithmURI());
+        ckdfp.appendChild(xdm);
         kdm.appendChild(ckdfp);
         kam.appendChild(kdm);
         // OriginatorKeyInfo
@@ -209,7 +208,7 @@ final class XMLENC {
         byte[] shared_secret = key_agreement.generateSecret();
 
         // Derive key wrap key with ckdf
-        ConcatenationKDFGenerator ckdf = new ConcatenationKDFGenerator(new SHA384Digest()); // FIXME: parametrize
+        ConcatenationKDFGenerator ckdf = new ConcatenationKDFGenerator(dm.getDigest());
         ckdf.init(new KDFParameters(shared_secret, Legacy.concatenate(algid, uinfo, vinfo)));
         byte[] wrapkeybytes = new byte[32];
         ckdf.generateBytes(wrapkeybytes, 0, 32);
@@ -242,6 +241,7 @@ final class XMLENC {
 
         cdoc.appendChild(root);
         if (v == CDOC.Version.CDOC_V1_0 || v == CDOC.Version.CDOC_V1_1) {
+            cdoc.insertBefore(cdoc.createComment("XXX: this is not a MIME type"), root);
             root.setAttribute("MimeType", "http://www.sk.ee/DigiDoc/v1.3.0/digidoc.xsd");
         } else if (v == CDOC.Version.CDOC_V2_0) {
             root.setAttribute("MimeType", "application/zip");
@@ -265,7 +265,7 @@ final class XMLENC {
             keyname.setTextContent("Pre-shared key");
             keyinfo.appendChild(keyname);
         } else {
-            // One for every recipient, dependent on algorithm
+            // One for every recipient, depending on algorithm
             for (X509Certificate crt : recipients) {
                 Element enckey = toRecipient(cdoc, v, privacy ? "Undisclosed" : getCN(crt), crt, dek, privacy);
                 keyinfo.appendChild(enckey);
@@ -314,6 +314,9 @@ final class XMLENC {
                     if (!kea.equals("http://www.w3.org/2009/xmlenc11#ECDH-ES"))
                         throw new IOException("Algorithm not supported: " + kea);
 
+                    String xsm = XML.xPath.evaluate("ds:DigestMethod/@Algorithm", params);
+                    DigestMethod dm = DigestMethod.fromURI(xsm);
+
                     String certb64 = XML.xPath.evaluate("ds:KeyInfo/xenc:AgreementMethod/xenc:RecipientKeyInfo/ds:X509Data/ds:X509Certificate", n);
                     if (!(certb64 == null || certb64.isEmpty())) {
                         CertificateFactory cf = CertificateFactory.getInstance("X509");
@@ -331,7 +334,7 @@ final class XMLENC {
                     ECPoint point = ECPointUtil.decodePoint(secp384r1.getCurve(), Base64.getDecoder().decode(key.getTextContent()));
                     KeyFactory eckf = KeyFactory.getInstance("EC");
                     ECPublicKey pk = (ECPublicKey) eckf.generatePublic(new ECPublicKeySpec(point, secp384r1));
-                    Recipient.ECDHESRecipient r = new Recipient.ECDHESRecipient(cert, name, pk, cgram, a, u, v);
+                    Recipient.ECDHESRecipient r = new Recipient.ECDHESRecipient(cert, name, pk, dm, cgram, a, u, v);
                     result.add(r);
                 } else {
                     throw new IOException("Unknown key encryption algorithm: " + algorithm);

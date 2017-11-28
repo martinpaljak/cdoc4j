@@ -70,13 +70,15 @@ public abstract class Recipient {
         private final byte[] algorithmID;
         private final byte[] partyUInfo;
         private final byte[] partyVInfo;
+        private final DigestMethod digest;
 
-        public ECDHESRecipient(X509Certificate cert, String name, ECPublicKey pubkey, byte[] cgram, byte[] algoid, byte[] partyu, byte[] partyv) {
+        public ECDHESRecipient(X509Certificate cert, String name, ECPublicKey pubkey, DigestMethod digest, byte[] cgram, byte[] algoid, byte[] partyu, byte[] partyv) {
             super(cert, name, cgram);
             this.pubkey = pubkey;
-            this.algorithmID = Arrays.copyOf(algoid, algoid.length);;
-            this.partyUInfo = Arrays.copyOf(partyu, partyu.length);;
-            this.partyVInfo = Arrays.copyOf(partyv, partyv.length);;
+            this.algorithmID = Arrays.copyOf(algoid, algoid.length);
+            this.partyUInfo = Arrays.copyOf(partyu, partyu.length);
+            this.partyVInfo = Arrays.copyOf(partyv, partyv.length);
+            this.digest = digest;
         }
 
         public ECPublicKey getSenderPublicKey() {
@@ -93,6 +95,10 @@ public abstract class Recipient {
 
         public byte[] getPartyVInfo() {
             return Arrays.copyOf(partyVInfo, partyVInfo.length);
+        }
+
+        public DigestMethod getDigestMethod() {
+            return digest;
         }
 
         @Override
