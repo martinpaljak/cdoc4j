@@ -216,19 +216,22 @@ public final class CDOCBuilder {
                 cipherdata.appendChild(payload);
                 recipientsXML.getDocumentElement().appendChild(cipherdata);
 
-                // XXX: qdigidoc requires at least the same number of properties as files in the payload
-                // or the payload files willt not be shown after decryption. Having more properties
-                // than files in the payload shrinks the file list automatically.
-                Comment propscomm = recipientsXML.createComment(" XXX: This is non-standard brainfart in CDOC-1.X and qdigidoc client ");
-                recipientsXML.getDocumentElement().appendChild(propscomm);
-                Element props = recipientsXML.createElement("xenc:EncryptionProperties");
-                for (String s : streams.keySet()) {
-                    Element prop = recipientsXML.createElement("xenc:EncryptionProperty");
-                    prop.setAttribute("Name", "orig_file");
-                    prop.setTextContent("☠   DECRYPT FIRST   ☠|666|application/octet-stream|D0");
-                    props.appendChild(prop);
+                // XXX: older versions of qdigidoc requires at least the same number of
+                // properties as files in the payload or the payload files will not be shown
+                // after decryption. Having more properties than files in the payload shrinks
+                // the file list automatically.
+                if (version == CDOC.Version.CDOC_V1_0) {
+                    Comment propscomm = recipientsXML.createComment(" XXX: This is non-standard brainfart in CDOC-1.X and qdigidoc client ");
+                    recipientsXML.getDocumentElement().appendChild(propscomm);
+                    Element props = recipientsXML.createElement("xenc:EncryptionProperties");
+                    for (String s : streams.keySet()) {
+                        Element prop = recipientsXML.createElement("xenc:EncryptionProperty");
+                        prop.setAttribute("Name", "orig_file");
+                        prop.setTextContent("☠   DECRYPT FIRST   ☠|666|application/octet-stream|D0");
+                        props.appendChild(prop);
+                    }
+                    recipientsXML.getDocumentElement().appendChild(props);
                 }
-                recipientsXML.getDocumentElement().appendChild(props);
                 if (validate && !XML.validate_cdoc(XML.dom2bytes(recipientsXML))) {
                     throw new IllegalStateException("Generated XML did not validate!");
                 }
