@@ -27,11 +27,14 @@ import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
+import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathException;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.*;
@@ -262,6 +265,41 @@ public final class CDOC implements AutoCloseable {
         return result;
     }
 
+    /**
+     * Finds correct filename (cdoc version is 1.1), if cdoc contains only on file.
+     * @return
+     * @throws IOException
+     */
+    private String getPayloadFilename() throws IOException {
+        String result = null;
+        final String ENC_DATA_ENC_PROP_ENC_PROP = "/xenc:EncryptedData/xenc:EncryptionProperties/xenc:EncryptionProperty";
+        if (version == Version.CDOC_V1_1 || version == Version.CDOC_V1_0) {
+            try {
+                NodeList encryptionProperty = (NodeList) XML.xPath.evaluate(ENC_DATA_ENC_PROP_ENC_PROP, xml, XPathConstants.NODESET);
+                for (int i = 0; i < encryptionProperty.getLength(); i++) {
+                    Node n = encryptionProperty.item(i);
+
+                    String encPropName = n.getAttributes().getNamedItem("Name").getTextContent();
+                    String encPropValue = n.getTextContent();
+                    log.debug("Node name: " + encPropName + ", Node value: " + encPropValue);
+                    if(encPropName.toLowerCase().equals("filename")){
+                        result = encPropValue;
+                        break;
+                    }
+                }
+            } catch (XPathException e) {
+                throw new IOException("Could not extract payload", e);
+            }
+        } else if (version == Version.CDOC_V2_0) {
+            // FIXME: How to find correct filename if CDOC is 2.0?
+            result = "unknown.bin";
+        } else {
+            throw new IllegalStateException("Unknown version: " + version);
+        }
+        log.info("getPayloadFilename: ", result);
+        return result;
+    }
+
     // Decrypt payload to stream
     public void decrypt(SecretKey dek, OutputStream to) throws IOException, GeneralSecurityException {
         try (InputStream in = getPayloadStream()) {
@@ -326,7 +364,9 @@ public final class CDOC implements AutoCloseable {
                 decrypt(dek, plaintext);
                 if (singleFile) {
                     files = new HashMap<>();
-                    files.put("payload.blah", plaintext.toByteArray()); // FIXME: file name
+                    String singlefileName = getPayloadFilename();
+                    log.info("Single filename: " + singlefileName);
+                    files.put(singlefileName, plaintext.toByteArray()); // FIXME: file name
                 } else {
                     files = Legacy.extractPayload(plaintext.toByteArray());
                 }
