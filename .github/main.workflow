@@ -4,7 +4,7 @@ workflow "Default workflow for pushes" {
 }
 
 action "mvn" {
-  needs = "mvn-11"
+#  needs = "mvn-11"
   uses = "docker://maven:3.6.1-jdk-8"
   runs = "mvn"
   args = "-U -B verify"
