@@ -9,7 +9,7 @@
     </parent>
     <artifactId>cdoc4j</artifactId>
     <packaging>jar</packaging>
-    <version>20.01.27-SNAPSHOT</version>
+    <version>20.01.27</version>
     <name>cdoc4j</name>
     <description>Java library for handling CDOC 1.0/1.1/2.0 files with AES-256 GCM and RSA or ECC recipients
     </description>
