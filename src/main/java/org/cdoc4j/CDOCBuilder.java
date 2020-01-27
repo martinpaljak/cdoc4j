@@ -216,11 +216,23 @@ public final class CDOCBuilder {
                 cipherdata.appendChild(payload);
                 recipientsXML.getDocumentElement().appendChild(cipherdata);
 
-                // XXX: older versions of qdigidoc requires at least the same number of
-                // properties as files in the payload or the payload files will not be shown
-                // after decryption. Having more properties than files in the payload shrinks
-                // the file list automatically.
-                if (version == CDOC.Version.CDOC_V1_0) {
+
+                if (!privacy) {
+                    Comment propscomm = recipientsXML.createComment(" XXX: This is non-standard brainfart in CDOC-1.X and qdigidoc client ");
+                    recipientsXML.getDocumentElement().appendChild(propscomm);
+                    Element props = recipientsXML.createElement("xenc:EncryptionProperties");
+                    for (String s : streams.keySet()) {
+                        Element prop = recipientsXML.createElement("xenc:EncryptionProperty");
+                        prop.setAttribute("Name", "orig_file");
+                        prop.setTextContent(String.format("%s|666|application/octet-stream|D0", s));
+                        props.appendChild(prop);
+                    }
+                    recipientsXML.getDocumentElement().appendChild(props);
+                } else if (version == CDOC.Version.CDOC_V1_0) {
+                    // XXX: older versions of qdigidoc requires at least the same number of
+                    // properties as files in the payload or the payload files will not be shown
+                    // after decryption. Having more properties than files in the payload shrinks
+                    // the file list automatically.
                     Comment propscomm = recipientsXML.createComment(" XXX: This is non-standard brainfart in CDOC-1.X and qdigidoc client ");
                     recipientsXML.getDocumentElement().appendChild(propscomm);
                     Element props = recipientsXML.createElement("xenc:EncryptionProperties");
