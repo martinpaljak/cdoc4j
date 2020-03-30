@@ -148,7 +148,8 @@ public final class Legacy {
         try {
             // Extract files from inner DDOC 1.3
             InputStream inner = new ByteArrayInputStream(payload);
-            NodeList files = (NodeList) XML.xPath.evaluate("/SignedDoc/DataFile", new InputSource(inner), XPathConstants.NODESET);
+            // XXX: behavior changes with jdk11+ (no namespace) vs jdk8 (requires namespace)
+            NodeList files = (NodeList) XML.xPath.evaluate("//*[local-name()='SignedDoc']/*[local-name()='DataFile']", new InputSource(inner), XPathConstants.NODESET);
             // Collect files
             Map<String, byte[]> result = new HashMap<>();
             for (int i = 0; i < files.getLength(); i++) {
