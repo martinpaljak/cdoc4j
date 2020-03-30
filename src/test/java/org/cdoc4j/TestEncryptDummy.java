@@ -208,7 +208,6 @@ public class TestEncryptDummy {
                 Map<String, byte[]> files = Legacy.extractPayload(pdata);
                 System.out.println(new String(files.get("test.txt"), "UTF-8"));
                 Assert.assertTrue(Arrays.equals(helloWorld, files.get("test.txt")));
-
             }
         }
     }
