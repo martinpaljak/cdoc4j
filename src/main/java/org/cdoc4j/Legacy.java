@@ -148,11 +148,12 @@ public final class Legacy {
         try {
             // Extract files from inner DDOC 1.3
             InputStream inner = new ByteArrayInputStream(payload);
-            NodeList files = (NodeList) XML.xPath.evaluate("/ddoc:SignedDoc/ddoc:DataFile", new InputSource(inner), XPathConstants.NODESET);
+            NodeList files = (NodeList) XML.xPath.evaluate("/SignedDoc/DataFile", new InputSource(inner), XPathConstants.NODESET);
             // Collect files
             Map<String, byte[]> result = new HashMap<>();
             for (int i = 0; i < files.getLength(); i++) {
                 Node n = files.item(i);
+
                 byte[] bytes = Base64.getMimeDecoder().decode(n.getTextContent());
                 result.put(n.getAttributes().getNamedItem("Filename").getTextContent(), bytes);
             }
