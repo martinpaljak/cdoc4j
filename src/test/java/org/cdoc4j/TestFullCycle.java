@@ -1,7 +1,7 @@
 package org.cdoc4j;
 
 import org.apache.commons.io.IOUtils;
-import org.esteid.hacker.FakeEstEIDCA;
+import org.esteid.sk.FakeEstEIDCA;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
