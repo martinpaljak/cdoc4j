@@ -1,24 +1,24 @@
-# Compiled class file
-*.class
-
-# Log file
-*.log
 
 # BlueJ files
-*.ctxt
-
+# Compiled class file
+# Log file
 # Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
 # Package Files #
-*.jar
-*.war
-*.ear
-*.zip
-*.tar.gz
-*.rar
-
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-
+**/target
+*.class
+*.ctxt
+*.ear
+*.iml
+*.jar
+*.log
+*.rar
+*.tar.gz
+*.war
+*.zip
+*~
+.mtj.tmp/
 /.idea
+/.mvn/wrapper/maven-wrapper.jar
+hs_err_pid*
+pom.xml.versionsBackup

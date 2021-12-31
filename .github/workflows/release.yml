@@ -13,17 +13,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
       - name: Setup Java
-        uses: actions/setup-java@master
+        uses: actions/setup-java@v2
         with:
           java-version: 1.8
+          distribution: temurin
       - name: Set SSH key
-        uses: webfactory/ssh-agent@v0.2.0
+        uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
       - name: Add known host key
         run: ssh-keyscan javacard.pro >> ~/.ssh/known_hosts
       - name: Package
-        run: mvn -B verify
+        run: ./mvnw -B verify
       - name: Release
         id: create_release
         uses: actions/create-release@v1.0.0
@@ -35,4 +36,4 @@ jobs:
           draft: false
           prerelease: false
       - name: Deploy package
-        run: mvn -B deploy
+        run: ./mvnw -B deploy

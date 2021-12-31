@@ -108,7 +108,7 @@ public final class XML {
     public static Document stream2dom(InputStream in) throws IOException {
         try {
             // XXX: stupid parser closes my streams....
-            return getSecureParser().parse(new CloseShieldInputStream(in));
+            return getSecureParser().parse(CloseShieldInputStream.wrap(in));
         } catch (SAXException e) {
             throw new IOException("Could not parse XML", e);
         }
