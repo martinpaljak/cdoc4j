@@ -1,17 +1,24 @@
-on: pull_request
-name: PR check
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+name: Continuous Integration
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ 8, 11, 13 ]
+        java: [ 11, 17 ]
     name: Java ${{ matrix.java }}
     steps:
       - name: Check out code
         uses: actions/checkout@master
       - name: Setup java
-        uses: actions/setup-java@master
+        uses: actions/setup-java@v2
         with:
           java-version: ${{ matrix.java }}
-      - run: mvn -U -B verify
+          distribution: temurin
+      - run: ./mvnw -U -B verify

@@ -9,6 +9,6 @@ import java.util.zip.ZipOutputStream;
 // For writing a ZIP to another ZIP Stream, without closing the outer container
 class CloseShieldZipOutputStream extends ZipOutputStream {
     public CloseShieldZipOutputStream(OutputStream s, Charset c) {
-        super(new CloseShieldOutputStream(s), c);
+        super(CloseShieldOutputStream.wrap(s), c);
     }
 }

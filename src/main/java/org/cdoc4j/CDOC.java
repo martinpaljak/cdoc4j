@@ -37,6 +37,7 @@ import javax.xml.xpath.XPathExpressionException;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.util.*;
@@ -53,9 +54,12 @@ public final class CDOC implements AutoCloseable {
     private final static Logger log = LoggerFactory.getLogger(CDOC.class);
 
     static {
-        // See DMI_RANDOM_USED_ONLY_ONCE for reasoning
-        random = new SecureRandom();
-        random.nextBytes(new byte[2]); // seed if needed and discard first 16 bits
+        try {
+            random = SecureRandom.getInstanceStrong();
+            random.nextBytes(new byte[2]); // seed if needed and discard first 16 bits
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Can't run", e);
+        }
         log.info("Using {} from {} for random (IV, keys)", random.getAlgorithm(), random.getProvider());
     }
 
